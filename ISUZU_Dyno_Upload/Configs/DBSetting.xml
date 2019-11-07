@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<DBSetting xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Oracle>
+    <Host>exd1-scan.jimc.cn</Host>
+    <Port>1521</Port>
+    <ServiceName>MPRD</ServiceName>
+    <UserID>mesdevice</UserID>
+    <PassWord>Device_31oct</PassWord>
+  </Oracle>
+  <SqlServer>
+    <UserName>sa</UserName>
+    <PassWord>sh49</PassWord>
+    <DBName>SH_OBD</DBName>
+    <IP>127.0.0.1</IP>
+    <Port>1433</Port>
+  </SqlServer>
+  <Interval>5</Interval>
+  <Name>Emission</Name>
+</DBSetting>

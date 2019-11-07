@@ -1,0 +1,1 @@
+alter table 车辆信息库 add Upload int not null default(0)
