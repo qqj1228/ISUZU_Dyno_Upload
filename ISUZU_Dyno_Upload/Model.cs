@@ -405,6 +405,132 @@ namespace ISUZU_Dyno_Upload {
             return ret;
         }
 
+        private void GetUploadData(UploadField FieldUL, int iCNLenb, UploadField result_out) {
+            // IF_EM_WQPF_2
+            string[] env = GetEnvValue(result_out.JCLSH);
+            result_out.RH = env[0];
+            result_out.ET = env[1];
+            result_out.AP = env[2];
+            string strLog = "IF_EM_WQPF_2 Data: [RH: " + result_out.RH + ", ET: " + result_out.ET + ", AP: " + result_out.AP + "]";
+            m_log.TraceInfo(strLog);
+
+            // IF_EM_WQPF_3
+            result_out.TESTTYPE = GetFieldValue(FieldUL.TESTTYPE, result_out.JCLSH);
+            result_out.TESTTYPE = GetTestType(result_out.TESTTYPE);
+            result_out.TESTDATE = GetFieldValue(FieldUL.TESTDATE, result_out.JCLSH);
+            if (result_out.TESTDATE.Length == 0) {
+                result_out.TESTDATE = DateTime.Now.ToLocalTime().ToString("yyyyMMdd");
+            } else {
+                result_out.TESTDATE = result_out.TESTDATE.Substring(0, 10).Replace("-", "");
+            }
+            result_out.EPASS = GetFieldValue(FieldUL.EPASS, result_out.JCLSH);
+            result_out.EPASS = result_out.EPASS == "合格" ? "1" : "0";
+            strLog = "IF_EM_WQPF_3 Data: [TESTTYPE: " + result_out.TESTTYPE + ", TESTDATE: " + result_out.TESTDATE + ", EPASS: " + result_out.EPASS + "]";
+            m_log.TraceInfo(strLog);
+
+            // IF_EM_WQPF_5_1
+            result_out.REAC = GetFieldValue(FieldUL.REAC, result_out.JCLSH, true, 3, 2);
+            result_out.LEACMAX = GetFieldValue(FieldUL.LEACMAX, result_out.JCLSH, true, 3, 2);
+            result_out.LEACMIN = GetFieldValue(FieldUL.LEACMIN, result_out.JCLSH, true, 3, 2);
+            result_out.LRCO = GetFieldValue(FieldUL.LRCO, result_out.JCLSH, true, 3, 2);
+            result_out.LLCO = GetFieldValue(FieldUL.LLCO, result_out.JCLSH, true, 3, 2);
+            result_out.LRHC = GetFieldValue(FieldUL.LRHC, result_out.JCLSH, true, 4);
+            result_out.LLHC = GetFieldValue(FieldUL.LLHC, result_out.JCLSH, true, 4);
+            result_out.HRCO = GetFieldValue(FieldUL.HRCO, result_out.JCLSH, true, 3, 2);
+            result_out.HLCO = GetFieldValue(FieldUL.HLCO, result_out.JCLSH, true, 3, 2);
+            result_out.HRHC = GetFieldValue(FieldUL.HRHC, result_out.JCLSH, true, 4);
+            result_out.HLHC = GetFieldValue(FieldUL.HLHC, result_out.JCLSH, true, 4);
+            strLog = "IF_EM_WQPF_5_1 Data: [REAC: " + result_out.REAC + ", LEACMAX: " + result_out.LEACMAX + ", LEACMIN: " + result_out.LEACMIN;
+            strLog += ", LRCO: " + result_out.LRCO;
+            strLog += ", LLCO: " + result_out.LLCO;
+            strLog += ", LRHC: " + result_out.LRHC;
+            strLog += ", LLHC: " + result_out.LLHC;
+            strLog += ", HRCO: " + result_out.HRCO;
+            strLog += ", HLCO: " + result_out.HLCO;
+            strLog += ", HRHC: " + result_out.HRHC;
+            strLog += ", HLHC: " + result_out.HLHC + "]";
+            m_log.TraceInfo(strLog);
+
+            // IF_EM_WQPF_5_2
+            result_out.ARHC5025 = GetFieldValue(FieldUL.ARHC5025, result_out.JCLSH, true, 4);
+            result_out.ALHC5025 = GetFieldValue(FieldUL.ALHC5025, result_out.JCLSH, true, 4);
+            result_out.ARCO5025 = GetFieldValue(FieldUL.ARCO5025, result_out.JCLSH, true, 3, 2);
+            result_out.ALCO5025 = GetFieldValue(FieldUL.ALCO5025, result_out.JCLSH, true, 3, 2);
+            result_out.ARNOX5025 = GetFieldValue(FieldUL.ARNOX5025, result_out.JCLSH, true, 4);
+            result_out.ALNOX5025 = GetFieldValue(FieldUL.ALNOX5025, result_out.JCLSH, true, 4);
+            result_out.ARHC2540 = GetFieldValue(FieldUL.ARHC2540, result_out.JCLSH, true, 4);
+            result_out.ALHC2540 = GetFieldValue(FieldUL.ALHC2540, result_out.JCLSH, true, 4);
+            result_out.ARCO2540 = GetFieldValue(FieldUL.ARCO2540, result_out.JCLSH, true, 3, 2);
+            result_out.ALCO2540 = GetFieldValue(FieldUL.ALCO2540, result_out.JCLSH, true, 3, 2);
+            result_out.ARNOX2540 = GetFieldValue(FieldUL.ARNOX2540, result_out.JCLSH, true, 4);
+            result_out.ALNOX2540 = GetFieldValue(FieldUL.ALNOX2540, result_out.JCLSH, true, 4);
+            strLog = "IF_EM_WQPF_5_2 Data: [ARHC5025: " + result_out.ARHC5025;
+            strLog += ", ALHC5025: " + result_out.ALHC5025;
+            strLog += ", ARCO5025: " + result_out.ARCO5025;
+            strLog += ", ALCO5025: " + result_out.ALCO5025;
+            strLog += ", ARNOX5025: " + result_out.ARNOX5025;
+            strLog += ", ALNOX5025: " + result_out.ALNOX5025;
+            strLog += ", ARHC2540: " + result_out.ARHC2540;
+            strLog += ", ALHC2540: " + result_out.ALHC2540;
+            strLog += ", ARCO2540: " + result_out.ARCO2540;
+            strLog += ", ALCO2540: " + result_out.ALCO2540;
+            strLog += ", ARNOX2540: " + result_out.ARNOX2540;
+            strLog += ", ALNOX2540: " + result_out.ALNOX2540 + "]";
+            m_log.TraceInfo(strLog);
+
+            // IF_EM_WQPF_5_3
+            result_out.VRHC = GetFieldValue(FieldUL.VRHC, result_out.JCLSH, true, 3, 2);
+            result_out.VLHC = GetFieldValue(FieldUL.VLHC, result_out.JCLSH, true, 3, 2);
+            result_out.VRCO_53 = GetFieldValue(FieldUL.VRCO_53, result_out.JCLSH, true, 3, 2);
+            result_out.VLCO_53 = GetFieldValue(FieldUL.VLCO_53, result_out.JCLSH, true, 3, 2);
+            result_out.VRNOX = GetFieldValue(FieldUL.VRNOX, result_out.JCLSH, true, 3, 2);
+            result_out.VLNOX = GetFieldValue(FieldUL.VLNOX, result_out.JCLSH, true, 3, 2);
+            strLog = "IF_EM_WQPF_5_3 Data: [VRHC: " + result_out.VRHC;
+            strLog += ", VLHC: " + result_out.VLHC;
+            strLog += ", VRCO_53: " + result_out.VRCO_53;
+            strLog += ", VLCO_53: " + result_out.VLCO_53;
+            strLog += ", VRNOX: " + result_out.VRNOX;
+            strLog += ", VLNOX: " + result_out.VLNOX + "]";
+            m_log.TraceInfo(strLog);
+
+            // IF_EM_WQPF_5_4
+            result_out.RATEREVUP = GetFieldValue(FieldUL.RATEREVUP, result_out.JCLSH, true, 5);
+            result_out.RATEREVDOWN = GetFieldValue(FieldUL.RATEREVDOWN, result_out.JCLSH, true, 5);
+            result_out.REV100 = GetFieldValue(FieldUL.REV100, result_out.JCLSH, true, 5);
+            result_out.MAXPOWER = GetFieldValue(FieldUL.MAXPOWER, result_out.JCLSH, true, 4, 1);
+            result_out.MAXPOWERLIMIT = GetFieldValue(FieldUL.MAXPOWERLIMIT, result_out.JCLSH, true, 4, 1);
+            result_out.SMOKE100 = GetFieldValue(FieldUL.SMOKE100, result_out.JCLSH, true, 3, 2);
+            result_out.SMOKE80 = GetFieldValue(FieldUL.SMOKE80, result_out.JCLSH, true, 3, 2);
+            result_out.SMOKELIMIT = GetFieldValue(FieldUL.SMOKELIMIT, result_out.JCLSH, true, 3, 2);
+            result_out.NOX = GetFieldValue(FieldUL.NOX, result_out.JCLSH, true, 4);
+            result_out.NOXLIMIT = GetFieldValue(FieldUL.NOXLIMIT, result_out.JCLSH, true, 4);
+            strLog = "IF_EM_WQPF_5_4 Data: [RATEREVUP: " + result_out.RATEREVUP;
+            strLog += ", RATEREVDOWN: " + result_out.RATEREVDOWN;
+            strLog += ", REV100: " + result_out.REV100;
+            strLog += ", MAXPOWER: " + result_out.MAXPOWER;
+            strLog += ", MAXPOWERLIMIT: " + result_out.MAXPOWERLIMIT;
+            strLog += ", SMOKE100: " + result_out.SMOKE100;
+            strLog += ", SMOKE80: " + result_out.SMOKE80;
+            strLog += ", SMOKELIMIT: " + result_out.SMOKELIMIT;
+            strLog += ", NOX: " + result_out.NOX;
+            strLog += ", NOXLIMIT: " + result_out.NOXLIMIT + "]";
+            m_log.TraceInfo(strLog);
+
+            // IF_EM_WQPF_6
+            string[] deviceInfo = GetDeviceInfo(FieldUL, iCNLenb);
+            result_out.ANALYMANUF = deviceInfo[0];
+            result_out.ANALYNAME = deviceInfo[1];
+            result_out.ANALYMODEL = deviceInfo[2];
+            result_out.DYNOMODEL = deviceInfo[3];
+            result_out.DYNOMANUF = deviceInfo[4];
+            strLog = "IF_EM_WQPF_6 Data: [ANALYMANUF: " + result_out.ANALYMANUF;
+            strLog += ", ANALYNAME: " + result_out.ANALYNAME;
+            strLog += ", ANALYMODEL: " + result_out.ANALYMODEL;
+            strLog += ", DYNOMODEL: " + result_out.DYNOMODEL;
+            strLog += ", DYNOMANUF: " + result_out.DYNOMANUF + "]";
+            m_log.TraceInfo(strLog);
+        }
+
         public List<UploadField> GetDynoData(UploadField FieldUL, int iCNLenb) {
             List<UploadField> resultList = new List<UploadField>();
             string strSQL = "select [VIN], [JCLSH] from [已检车辆库] where [Upload] = '0' and [JCJG] = '合格' and [JCLX] = '初检'";
@@ -418,138 +544,7 @@ namespace ISUZU_Dyno_Upload {
                 };
                 string strLog = "===== Record " + (i + 1).ToString() + ": [VIN: " + result.VIN + ", JCLSH: " + result.JCLSH + "] =====";
                 m_log.TraceInfo(strLog);
-
-                // IF_EM_WQPF_2
-                //m_log.TraceInfo("Start Get IF_EM_WQPF_2 Data");
-                string[] env = GetEnvValue(result.JCLSH);
-                result.RH = env[0];
-                result.ET = env[1];
-                result.AP = env[2];
-                strLog = "IF_EM_WQPF_2 Data: [RH: " + result.RH + ", ET: " + result.ET + ", AP: " + result.AP + "]";
-                m_log.TraceInfo(strLog);
-
-                // IF_EM_WQPF_3
-                //m_log.TraceInfo("Get IF_EM_WQPF_3 Data");
-                result.TESTTYPE = GetFieldValue(FieldUL.TESTTYPE, result.JCLSH);
-                result.TESTTYPE = GetTestType(result.TESTTYPE);
-                result.TESTDATE = GetFieldValue(FieldUL.TESTDATE, result.JCLSH);
-                if (result.TESTDATE.Length == 0) {
-                    result.TESTDATE = DateTime.Now.ToLocalTime().ToString("yyyyMMdd");
-                } else {
-                    result.TESTDATE = result.TESTDATE.Substring(0, 10).Replace("-", "");
-                }
-                result.EPASS = GetFieldValue(FieldUL.EPASS, result.JCLSH);
-                result.EPASS = result.EPASS == "合格" ? "1" : "0";
-                strLog = "IF_EM_WQPF_3 Data: [TESTTYPE: " + result.TESTTYPE + ", TESTDATE: " + result.TESTDATE + ", EPASS: " + result.EPASS + "]";
-                m_log.TraceInfo(strLog);
-
-                // IF_EM_WQPF_5_1
-                //m_log.TraceInfo("Get IF_EM_WQPF_5_1 Data");
-                result.REAC = GetFieldValue(FieldUL.REAC, result.JCLSH, true, 3, 2);
-                result.LEACMAX = GetFieldValue(FieldUL.LEACMAX, result.JCLSH, true, 3, 2);
-                result.LEACMIN = GetFieldValue(FieldUL.LEACMIN, result.JCLSH, true, 3, 2);
-                result.LRCO = GetFieldValue(FieldUL.LRCO, result.JCLSH, true, 3, 2);
-                result.LLCO = GetFieldValue(FieldUL.LLCO, result.JCLSH, true, 3, 2);
-                result.LRHC = GetFieldValue(FieldUL.LRHC, result.JCLSH, true, 4);
-                result.LLHC = GetFieldValue(FieldUL.LLHC, result.JCLSH, true, 4);
-                result.HRCO = GetFieldValue(FieldUL.HRCO, result.JCLSH, true, 3, 2);
-                result.HLCO = GetFieldValue(FieldUL.HLCO, result.JCLSH, true, 3, 2);
-                result.HRHC = GetFieldValue(FieldUL.HRHC, result.JCLSH, true, 4);
-                result.HLHC = GetFieldValue(FieldUL.HLHC, result.JCLSH, true, 4);
-                strLog = "IF_EM_WQPF_5_1 Data: [REAC: " + result.REAC + ", LEACMAX: " + result.LEACMAX + ", LEACMIN: " + result.LEACMIN;
-                strLog += ", LRCO: " + result.LRCO;
-                strLog += ", LLCO: " + result.LLCO;
-                strLog += ", LRHC: " + result.LRHC;
-                strLog += ", LLHC: " + result.LLHC;
-                strLog += ", HRCO: " + result.HRCO;
-                strLog += ", HLCO: " + result.HLCO;
-                strLog += ", HRHC: " + result.HRHC;
-                strLog += ", HLHC: " + result.HLHC + "]";
-                m_log.TraceInfo(strLog);
-
-                // IF_EM_WQPF_5_2
-                //m_log.TraceInfo("Get IF_EM_WQPF_5_2 Data");
-                result.ARHC5025 = GetFieldValue(FieldUL.ARHC5025, result.JCLSH, true, 4);
-                result.ALHC5025 = GetFieldValue(FieldUL.ALHC5025, result.JCLSH, true, 4);
-                result.ARCO5025 = GetFieldValue(FieldUL.ARCO5025, result.JCLSH, true, 3, 2);
-                result.ALCO5025 = GetFieldValue(FieldUL.ALCO5025, result.JCLSH, true, 3, 2);
-                result.ARNOX5025 = GetFieldValue(FieldUL.ARNOX5025, result.JCLSH, true, 4);
-                result.ALNOX5025 = GetFieldValue(FieldUL.ALNOX5025, result.JCLSH, true, 4);
-                result.ARHC2540 = GetFieldValue(FieldUL.ARHC2540, result.JCLSH, true, 4);
-                result.ALHC2540 = GetFieldValue(FieldUL.ALHC2540, result.JCLSH, true, 4);
-                result.ARCO2540 = GetFieldValue(FieldUL.ARCO2540, result.JCLSH, true, 3, 2);
-                result.ALCO2540 = GetFieldValue(FieldUL.ALCO2540, result.JCLSH, true, 3, 2);
-                result.ARNOX2540 = GetFieldValue(FieldUL.ARNOX2540, result.JCLSH, true, 4);
-                result.ALNOX2540 = GetFieldValue(FieldUL.ALNOX2540, result.JCLSH, true, 4);
-                strLog = "IF_EM_WQPF_5_2 Data: [ARHC5025: " + result.ARHC5025;
-                strLog += ", ALHC5025: " + result.ALHC5025;
-                strLog += ", ARCO5025: " + result.ARCO5025;
-                strLog += ", ALCO5025: " + result.ALCO5025;
-                strLog += ", ARNOX5025: " + result.ARNOX5025;
-                strLog += ", ALNOX5025: " + result.ALNOX5025;
-                strLog += ", ARHC2540: " + result.ARHC2540;
-                strLog += ", ALHC2540: " + result.ALHC2540;
-                strLog += ", ARCO2540: " + result.ARCO2540;
-                strLog += ", ALCO2540: " + result.ALCO2540;
-                strLog += ", ARNOX2540: " + result.ARNOX2540;
-                strLog += ", ALNOX2540: " + result.ALNOX2540 + "]";
-                m_log.TraceInfo(strLog);
-
-                // IF_EM_WQPF_5_3
-                //m_log.TraceInfo("Get IF_EM_WQPF_5_3 Data");
-                result.VRHC = GetFieldValue(FieldUL.VRHC, result.JCLSH, true, 3, 2);
-                result.VLHC = GetFieldValue(FieldUL.VLHC, result.JCLSH, true, 3, 2);
-                result.VRCO_53 = GetFieldValue(FieldUL.VRCO_53, result.JCLSH, true, 3, 2);
-                result.VLCO_53 = GetFieldValue(FieldUL.VLCO_53, result.JCLSH, true, 3, 2);
-                result.VRNOX = GetFieldValue(FieldUL.VRNOX, result.JCLSH, true, 3, 2);
-                result.VLNOX = GetFieldValue(FieldUL.VLNOX, result.JCLSH, true, 3, 2);
-                strLog = "IF_EM_WQPF_5_3 Data: [VRHC: " + result.VRHC;
-                strLog += ", VLHC: " + result.VLHC;
-                strLog += ", VRCO_53: " + result.VRCO_53;
-                strLog += ", VLCO_53: " + result.VLCO_53;
-                strLog += ", VRNOX: " + result.VRNOX;
-                strLog += ", VLNOX: " + result.VLNOX + "]";
-                m_log.TraceInfo(strLog);
-
-                // IF_EM_WQPF_5_4
-                //m_log.TraceInfo("Get IF_EM_WQPF_5_4 Data");
-                result.RATEREVUP = GetFieldValue(FieldUL.RATEREVUP, result.JCLSH, true, 5);
-                result.RATEREVDOWN = GetFieldValue(FieldUL.RATEREVDOWN, result.JCLSH, true, 5);
-                result.REV100 = GetFieldValue(FieldUL.REV100, result.JCLSH, true, 5);
-                result.MAXPOWER = GetFieldValue(FieldUL.MAXPOWER, result.JCLSH, true, 4, 1);
-                result.MAXPOWERLIMIT = GetFieldValue(FieldUL.MAXPOWERLIMIT, result.JCLSH, true, 4, 1);
-                result.SMOKE100 = GetFieldValue(FieldUL.SMOKE100, result.JCLSH, true, 3, 2);
-                result.SMOKE80 = GetFieldValue(FieldUL.SMOKE80, result.JCLSH, true, 3, 2);
-                result.SMOKELIMIT = GetFieldValue(FieldUL.SMOKELIMIT, result.JCLSH, true, 3, 2);
-                result.NOX = GetFieldValue(FieldUL.NOX, result.JCLSH, true, 4);
-                result.NOXLIMIT = GetFieldValue(FieldUL.NOXLIMIT, result.JCLSH, true, 4);
-                strLog = "IF_EM_WQPF_5_4 Data: [RATEREVUP: " + result.RATEREVUP;
-                strLog += ", RATEREVDOWN: " + result.RATEREVDOWN;
-                strLog += ", REV100: " + result.REV100;
-                strLog += ", MAXPOWER: " + result.MAXPOWER;
-                strLog += ", MAXPOWERLIMIT: " + result.MAXPOWERLIMIT;
-                strLog += ", SMOKE100: " + result.SMOKE100;
-                strLog += ", SMOKE80: " + result.SMOKE80;
-                strLog += ", SMOKELIMIT: " + result.SMOKELIMIT;
-                strLog += ", NOX: " + result.NOX;
-                strLog += ", NOXLIMIT: " + result.NOXLIMIT + "]";
-                m_log.TraceInfo(strLog);
-
-                // IF_EM_WQPF_6
-                //m_log.TraceInfo("Get IF_EM_WQPF_6 Data");
-                string[] deviceInfo = GetDeviceInfo(FieldUL, iCNLenb);
-                result.ANALYMANUF = deviceInfo[0];
-                result.ANALYNAME = deviceInfo[1];
-                result.ANALYMODEL = deviceInfo[2];
-                result.DYNOMODEL = deviceInfo[3];
-                result.DYNOMANUF = deviceInfo[4];
-                strLog = "IF_EM_WQPF_6 Data: [ANALYMANUF: " + result.ANALYMANUF;
-                strLog += ", ANALYNAME: " + result.ANALYNAME;
-                strLog += ", ANALYMODEL: " + result.ANALYMODEL;
-                strLog += ", DYNOMODEL: " + result.DYNOMODEL;
-                strLog += ", DYNOMANUF: " + result.DYNOMANUF + "]";
-                m_log.TraceInfo(strLog);
-
+                GetUploadData(FieldUL, iCNLenb, result);
                 resultList.Add(result);
             }
             return resultList;
@@ -559,6 +554,133 @@ namespace ISUZU_Dyno_Upload {
             string strSQL = "update [已检车辆库] set [Upload] = '" + value.ToString() + "' where [JCLSH] = '" + JCLSH + "'";
             return RunSQL(strSQL);
         }
+
+        public UploadField GetDynoDataByVIN(UploadField FieldUL, int iCNLenb, string strVIN) {
+            UploadField result = null;
+            string strSQL = "select [VIN], [JCLSH] from [已检车辆库] where [VIN] = '" + strVIN + "'";
+            m_log.TraceInfo("==> T-SQL: " + strSQL);
+            string[,] cars = SelectDB(strSQL);
+            if (cars != null && cars.GetLength(0) > 0) {
+                result = new UploadField {
+                    VIN = cars[0, 0],
+                    JCLSH = cars[0, 1]
+                };
+                string strLog = "===== GetDynoDataByVIN: [VIN: " + result.VIN + ", JCLSH: " + result.JCLSH + "] =====";
+                m_log.TraceInfo(strLog);
+                GetUploadData(FieldUL, iCNLenb, result);
+            }
+            return result;
+        }
+
+        public Dictionary<string, string> GetJCLSH(string strVIN) {
+            Dictionary<string, string> ret = new Dictionary<string, string>();
+            string[,] result = SelectDB(string.Format("select [JCLSH] from [已检车辆库] where [VIN] = '{0}'", strVIN));
+            ret.Add("VIN号", strVIN);
+            ret.Add("检测流水号", result[0, 0]);
+            return ret;
+        }
+
+        public Dictionary<string, string> GetEnv(string JCLSH) {
+            Dictionary<string, string> ret = new Dictionary<string, string>();
+            string[] env = GetEnvValue(JCLSH);
+            ret.Add("相对湿度(%)", env[0]);
+            ret.Add("环境温度(°C)", env[1]);
+            ret.Add("大气压力(kPa)", env[2]);
+            return ret;
+        }
+
+        public Dictionary<string, string> GetResult(UploadField FieldUL, string JCLSH) {
+            Dictionary<string, string> ret = new Dictionary<string, string>();
+            string TESTTYPE = GetFieldValue(FieldUL.TESTTYPE, JCLSH);
+            TESTTYPE = GetTestType(TESTTYPE);
+            string TESTDATE = GetFieldValue(FieldUL.TESTDATE, JCLSH);
+            if (TESTDATE.Length == 0) {
+                TESTDATE = DateTime.Now.ToLocalTime().ToString("yyyyMMdd");
+            } else {
+                TESTDATE = TESTDATE.Substring(0, 10).Replace("-", "");
+            }
+            string EPASS = GetFieldValue(FieldUL.EPASS, JCLSH);
+            EPASS = (EPASS == "合格") ? "1" : "0";
+            ret.Add("检测方法", TESTTYPE);
+            ret.Add("检测日期", TESTDATE);
+            ret.Add("检测结果", EPASS);
+            return ret;
+        }
+
+        public Dictionary<string, string> GetDevice(UploadField FieldUL, int iCNLenb) {
+            Dictionary<string, string> ret = new Dictionary<string, string>();
+            string[] deviceInfo = GetDeviceInfo(FieldUL, iCNLenb);
+            ret.Add("分析仪制造厂", deviceInfo[0]);
+            ret.Add("分析仪名称", deviceInfo[1]);
+            ret.Add("分析仪型号", deviceInfo[2]);
+            ret.Add("测功机型号", deviceInfo[3]);
+            ret.Add("测功机生产厂", deviceInfo[4]);
+            return ret;
+        }
+
+        public Dictionary<string, string> Get51(UploadField FieldUL, string JCLSH) {
+            Dictionary<string, string> ret = new Dictionary<string, string> {
+                { "过量空气系数结果", GetFieldValue(FieldUL.REAC, JCLSH, true, 3, 2) },
+                { "双怠速过量空气系数上限", GetFieldValue(FieldUL.LEACMAX, JCLSH, true, 3, 2) },
+                { "双怠速过量空气系数下限", GetFieldValue(FieldUL.LEACMIN, JCLSH, true, 3, 2) },
+                { "低怠速CO结果(%)", GetFieldValue(FieldUL.LRCO, JCLSH, true, 3, 2) },
+                { "低怠速CO限值(%)", GetFieldValue(FieldUL.LLCO, JCLSH, true, 3, 2) },
+                { "低怠速HC结果(10^-6)", GetFieldValue(FieldUL.LRHC, JCLSH, true, 4) },
+                { "低怠速HC限值(10^-6)", GetFieldValue(FieldUL.LLHC, JCLSH, true, 4) },
+                { "高怠速CO结果(%)", GetFieldValue(FieldUL.HRCO, JCLSH, true, 3, 2) },
+                { "高怠速CO限值(%)", GetFieldValue(FieldUL.HLCO, JCLSH, true, 3, 2) },
+                { "高怠速HC结果(10^-6)", GetFieldValue(FieldUL.HRHC, JCLSH, true, 4) },
+                { "高怠速HC限值(10^-6)", GetFieldValue(FieldUL.HLHC, JCLSH, true, 4) }
+            };
+            return ret;
+        }
+
+        public Dictionary<string, string> Get52(UploadField FieldUL, string JCLSH) {
+            Dictionary<string, string> ret = new Dictionary<string, string> {
+                { "5025HC结果(10^-6)", GetFieldValue(FieldUL.ARHC5025, JCLSH, true, 4) },
+                { "5025HC限值(10^-6)", GetFieldValue(FieldUL.ALHC5025, JCLSH, true, 4) },
+                { "5025CO结果(%)", GetFieldValue(FieldUL.ARCO5025, JCLSH, true, 3, 2) },
+                { "5025CO限值(%)", GetFieldValue(FieldUL.ALCO5025, JCLSH, true, 3, 2) },
+                { "5025NO结果(10^-6)", GetFieldValue(FieldUL.ARNOX5025, JCLSH, true, 4) },
+                { "5025NO限值(10^-6)", GetFieldValue(FieldUL.ALNOX5025, JCLSH, true, 4) },
+                { "2540HC结果(10^-6)", GetFieldValue(FieldUL.ARHC2540, JCLSH, true, 4) },
+                { "2540HC限值(10^-6)", GetFieldValue(FieldUL.ALHC2540, JCLSH, true, 4) },
+                { "2540CO结果(%)", GetFieldValue(FieldUL.ARCO2540, JCLSH, true, 3, 2) },
+                { "2540CO限值(%)", GetFieldValue(FieldUL.ALCO2540, JCLSH, true, 3, 2) },
+                { "2540NO结果(10^-6)", GetFieldValue(FieldUL.ARNOX2540, JCLSH, true, 4) },
+                { "2540NO限值(10^-6)", GetFieldValue(FieldUL.ALNOX2540, JCLSH, true, 4) }
+            };
+            return ret;
+        }
+
+        public Dictionary<string, string> Get53(UploadField FieldUL, string JCLSH) {
+            Dictionary<string, string> ret = new Dictionary<string, string> {
+                { "HC结果(g/km)", GetFieldValue(FieldUL.VRHC, JCLSH, true, 3, 2) },
+                { "HC限值(g/km)", GetFieldValue(FieldUL.VLHC, JCLSH, true, 3, 2) },
+                { "CO结果(g/km)", GetFieldValue(FieldUL.VRCO_53, JCLSH, true, 3, 2) },
+                { "CO限值(g/km)", GetFieldValue(FieldUL.VLCO_53, JCLSH, true, 3, 2) },
+                { "NOx结果(g/km)", GetFieldValue(FieldUL.VRNOX, JCLSH, true, 3, 2) },
+                { "NOx限值(g/km)", GetFieldValue(FieldUL.VLNOX, JCLSH, true, 3, 2) }
+            };
+            return ret;
+        }
+
+        public Dictionary<string, string> Get54(UploadField FieldUL, string JCLSH) {
+            Dictionary<string, string> ret = new Dictionary<string, string> {
+                { "额定转速上限(r/min)", GetFieldValue(FieldUL.RATEREVUP, JCLSH, true, 5) },
+                { "额定转速下限(r/min)", GetFieldValue(FieldUL.RATEREVDOWN, JCLSH, true, 5) },
+                { "实测转速(r/min)", GetFieldValue(FieldUL.REV100, JCLSH, true, 5) },
+                { "实测最大轮边功率(kw)", GetFieldValue(FieldUL.MAXPOWER, JCLSH, true, 4, 1) },
+                { "最大轮边功率限值(kw)", GetFieldValue(FieldUL.MAXPOWERLIMIT, JCLSH, true, 4, 1) },
+                { "100%点烟度(1/m)", GetFieldValue(FieldUL.SMOKE100, JCLSH, true, 3, 2) },
+                { "80%点烟度(1/m)", GetFieldValue(FieldUL.SMOKE80, JCLSH, true, 3, 2) },
+                { "烟度限值(1/m)", GetFieldValue(FieldUL.SMOKELIMIT, JCLSH, true, 3, 2) },
+                { "氮氧化物测量值(10^-6)", GetFieldValue(FieldUL.NOX, JCLSH, true, 4) },
+                { "氮氧化物限值(10^-6)", GetFieldValue(FieldUL.NOXLIMIT, JCLSH, true, 4) }
+            };
+            return ret;
+        }
+
     }
 
     public class EnvStructure {

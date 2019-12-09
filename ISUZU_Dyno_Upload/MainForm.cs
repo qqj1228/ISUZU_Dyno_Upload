@@ -7,6 +7,7 @@ using System.Drawing;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace ISUZU_Dyno_Upload {
@@ -17,6 +18,17 @@ namespace ISUZU_Dyno_Upload {
         public ModelOracle m_dbOracle;
         public int m_iCNLenb;
         readonly System.Timers.Timer m_timer;
+        public DataTable m_dtInfo;
+        public DataTable m_dtEnv;
+        public DataTable m_dtResult;
+        public DataTable m_dtDevice;
+        public DataTable m_dt51;
+        public DataTable m_dt52;
+        public DataTable m_dt53;
+        public DataTable m_dt54;
+        public DataTable m_dt55;
+        public DataTable m_dt56;
+
 
         public MainForm() {
             InitializeComponent();
@@ -45,13 +57,16 @@ namespace ISUZU_Dyno_Upload {
             m_timer.AutoReset = true;
             m_timer.Enabled = true;
 #endif
-
         }
 
         private void MainForm_Resize(object sender, EventArgs e) {
-            int margin = this.grpBoxInfo.Location.X;
-            this.grpBoxInfo.Width = (this.Width - margin * 6) / 4;
-            this.grpBoxInfo.Height = (this.Height - this.grpBoxInfo.Location.Y - margin * 7) / 4;
+            int padding = this.btnUpload.Location.X;
+            int margin = this.grpBox51.Location.X - (this.grpBoxInfo.Location.X + this.grpBoxInfo.Width);
+
+            this.lblAutoUpload.Location = new Point((this.ClientSize.Width + this.txtBoxVIN.Location.X + this.txtBoxVIN.Width) / 2, this.lblManualUpload.Location.Y);
+
+            this.grpBoxInfo.Width = (this.ClientSize.Width - padding * 2 - margin * 3) / 4;
+            this.grpBoxInfo.Height = (this.ClientSize.Height - this.grpBoxInfo.Location.Y - padding - margin * 3) / 4;
             this.grpBoxEnv.Location = new Point(this.grpBoxInfo.Location.X, this.grpBoxInfo.Height + this.grpBoxInfo.Location.Y + margin);
             this.grpBoxEnv.Width = this.grpBoxInfo.Width;
             this.grpBoxEnv.Height = this.grpBoxInfo.Height;
@@ -64,7 +79,7 @@ namespace ISUZU_Dyno_Upload {
 
             this.grpBox51.Location = new Point(this.grpBoxInfo.Location.X + this.grpBoxInfo.Width + margin, this.grpBoxInfo.Location.Y);
             this.grpBox51.Width = this.grpBoxInfo.Width;
-            this.grpBox51.Height = (this.Height - this.grpBoxInfo.Location.Y - margin * 5) / 2;
+            this.grpBox51.Height = (this.ClientSize.Height - this.grpBoxInfo.Location.Y - padding - margin) / 2;
             this.grpBox52.Location = new Point(this.grpBox51.Location.X, this.grpBox51.Location.Y + this.grpBox51.Height + margin);
             this.grpBox52.Width = this.grpBox51.Width;
             this.grpBox52.Height = this.grpBox51.Height;
@@ -85,6 +100,64 @@ namespace ISUZU_Dyno_Upload {
 
         }
 
+        private bool Upload(UploadField result, out string errorMsg) {
+            bool bRet = false;
+            errorMsg = "";
+            if (result.EPASS != "1") {
+                m_log.TraceInfo("Skip this VIN[" + result.VIN + "] because of EPASS != 1");
+                errorMsg = "排放结果不合格，数据不上传";
+                return bRet;
+            }
+            DataTable dt2 = new DataTable("IF_EM_WQPF_2");
+            DataTable dt3 = new DataTable("IF_EM_WQPF_3");
+            DataTable dt51 = new DataTable("IF_EM_WQPF_5_1");
+            DataTable dt52 = new DataTable("IF_EM_WQPF_5_2");
+            DataTable dt53 = new DataTable("IF_EM_WQPF_5_3");
+            DataTable dt54 = new DataTable("IF_EM_WQPF_5_4");
+            DataTable dt6 = new DataTable("IF_EM_WQPF_6");
+            try {
+                string[] ID_MES = m_dbOracle.GetValue("IF_EM_WQPF_1", "ID", "VIN", result.VIN);
+                if (ID_MES != null && ID_MES.Length > 0) {
+                    SetDataTable2Oracle(ID_MES[0], dt2, result);
+                    SetDataTable3Oracle(ID_MES[0], dt3, result);
+                    switch (result.TESTTYPE) {
+                    case "1":
+                        SetDataTable51Oracle(ID_MES[0], dt51, result);
+                        break;
+                    case "2":
+                        SetDataTable52Oracle(ID_MES[0], dt52, result);
+                        break;
+                    case "3":
+                        SetDataTable53Oracle(ID_MES[0], dt53, result);
+                        break;
+                    case "4":
+                        SetDataTable54Oracle(ID_MES[0], dt54, result);
+                        break;
+                    default:
+                        break;
+                    }
+                    SetDataTable6Oracle(ID_MES[0], dt6, result);
+                    m_db.SetUpload(1, result.JCLSH);
+                    bRet = true;
+                } else {
+                    m_log.TraceWarning("Skip this VIN[" + result.VIN + "] because it is not in MES");
+                    errorMsg = "在MES中未检测到记录，数据不上传";
+                }
+            } catch (Exception ex) {
+                m_log.TraceError("Upload error: " + ex.Message);
+                errorMsg = "Exception|" + ex.Message;
+            } finally {
+                dt2.Dispose();
+                dt3.Dispose();
+                dt51.Dispose();
+                dt52.Dispose();
+                dt53.Dispose();
+                dt54.Dispose();
+                dt6.Dispose();
+            }
+            return bRet;
+        }
+
         private void OnTimeUpload(object source, System.Timers.ElapsedEventArgs e) {
             m_log.TraceInfo("Upload dyno data OnTime. Ver: " + MainFileVersion.AssemblyVersion);
             List<UploadField> resultList = new List<UploadField>();
@@ -94,66 +167,20 @@ namespace ISUZU_Dyno_Upload {
                 m_log.TraceError("GetDynoData error: " + ex.Message);
             }
             foreach (UploadField result in resultList) {
-                if (result.EPASS != "1") {
-                    m_log.TraceInfo("Skip this VIN[" + result.VIN + "] because of EPASS != 1");
+                if (Upload(result, out string errorMsg)) {
                     this.Invoke((EventHandler)delegate {
-                        this.lblAutoUpload.ForeColor = Color.Red;
-                        this.lblAutoUpload.Text = "VIN[" + result.VIN + "] 排放结果不合格，数据不上传";
+                        this.lblAutoUpload.ForeColor = Color.ForestGreen;
+                        this.lblAutoUpload.Text = "VIN[" + result.VIN + "] 数据已自动上传";
                     });
-                    continue;
-                }
-                DataTable dt2 = new DataTable("IF_EM_WQPF_2");
-                DataTable dt3 = new DataTable("IF_EM_WQPF_3");
-                DataTable dt51 = new DataTable("IF_EM_WQPF_5_1");
-                DataTable dt52 = new DataTable("IF_EM_WQPF_5_2");
-                DataTable dt53 = new DataTable("IF_EM_WQPF_5_3");
-                DataTable dt54 = new DataTable("IF_EM_WQPF_5_4");
-                DataTable dt6 = new DataTable("IF_EM_WQPF_6");
-                try {
-                    string[] ID_MES = m_dbOracle.GetValue("IF_EM_WQPF_1", "ID", "VIN", result.VIN);
-                    if (ID_MES != null && ID_MES.Length > 0) {
-                        SetDataTable2Oracle(ID_MES[0], dt2, result);
-                        SetDataTable3Oracle(ID_MES[0], dt3, result);
-                        switch (result.TESTTYPE) {
-                        case "1":
-                            SetDataTable51Oracle(ID_MES[0], dt51, result);
-                            break;
-                        case "2":
-                            SetDataTable52Oracle(ID_MES[0], dt52, result);
-                            break;
-                        case "3":
-                            SetDataTable53Oracle(ID_MES[0], dt53, result);
-                            break;
-                        case "4":
-                            SetDataTable54Oracle(ID_MES[0], dt54, result);
-                            break;
-                        default:
-                            break;
-                        }
-                        SetDataTable6Oracle(ID_MES[0], dt6, result);
-                        this.Invoke((EventHandler)delegate {
-                            this.lblAutoUpload.ForeColor = Color.ForestGreen;
-                            this.lblAutoUpload.Text = "VIN[" + result.VIN + "] 数据已上传";
-                        });
-                        m_db.SetUpload(1, result.JCLSH);
+                } else {
+                    if (errorMsg.Contains("Exception|")) {
+                        MessageBox.Show(errorMsg.Split('|')[1], "上传出错", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     } else {
-                        m_log.TraceWarning("Skip this VIN[" + result.VIN + "] because it is not in MES");
                         this.Invoke((EventHandler)delegate {
                             this.lblAutoUpload.ForeColor = Color.Red;
-                            this.lblAutoUpload.Text = "VIN[" + result.VIN + "] 在MES中未检测到记录，数据不上传";
+                            this.lblAutoUpload.Text = "VIN[" + result.VIN + "] " + errorMsg;
                         });
                     }
-                } catch (Exception ex) {
-                    m_log.TraceError("Upload error: " + ex.Message);
-                    MessageBox.Show(ex.Message, "上传出错", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                } finally {
-                    dt2.Dispose();
-                    dt3.Dispose();
-                    dt51.Dispose();
-                    dt52.Dispose();
-                    dt53.Dispose();
-                    dt54.Dispose();
-                    dt6.Dispose();
                 }
             }
         }
@@ -560,6 +587,208 @@ namespace ISUZU_Dyno_Upload {
             }
         }
 
+        private void SetGridViewColumnsSortMode(DataGridView gridView, DataGridViewColumnSortMode sortMode) {
+            for (int i = 0; i < gridView.Columns.Count; i++) {
+                gridView.Columns[i].SortMode = sortMode;
+            }
+        }
+
+        private void ShowData(string strVIN) {
+            DataRow dr;
+            string JCLSH = "";
+            Dictionary<string, string> result = m_db.GetJCLSH(strVIN);
+            if (result != null && result["检测流水号"] != null) {
+                JCLSH = result["检测流水号"];
+            }
+            m_dtInfo.Clear();
+            foreach (string key in result.Keys) {
+                dr = m_dtInfo.NewRow();
+                dr[0] = key;
+                dr[1] = result[key];
+                m_dtInfo.Rows.Add(dr);
+            }
+
+            result = m_db.GetEnv(JCLSH);
+            m_dtEnv.Clear();
+            foreach (string key in result.Keys) {
+                dr = m_dtEnv.NewRow();
+                dr[0] = key;
+                dr[1] = result[key];
+                m_dtEnv.Rows.Add(dr);
+            }
+
+            result = m_db.GetResult(m_cfg.FieldUL, JCLSH);
+            m_dtResult.Clear();
+            foreach (string key in result.Keys) {
+                dr = m_dtResult.NewRow();
+                dr[0] = key;
+                dr[1] = result[key];
+                m_dtResult.Rows.Add(dr);
+            }
+
+            result = m_db.GetDevice(m_cfg.FieldUL, m_iCNLenb);
+            m_dtDevice.Clear();
+            foreach (string key in result.Keys) {
+                dr = m_dtDevice.NewRow();
+                dr[0] = key;
+                dr[1] = result[key];
+                m_dtDevice.Rows.Add(dr);
+            }
+
+            switch (m_dtResult.Rows[0][1]) {
+            case "1":
+                result = m_db.Get51(m_cfg.FieldUL, JCLSH);
+                m_dt51.Clear();
+                foreach (string key in result.Keys) {
+                    dr = m_dt51.NewRow();
+                    dr[0] = key;
+                    dr[1] = result[key];
+                    m_dt51.Rows.Add(dr);
+                }
+                break;
+            case "2":
+                result = m_db.Get52(m_cfg.FieldUL, JCLSH);
+                m_dt52.Clear();
+                foreach (string key in result.Keys) {
+                    dr = m_dt52.NewRow();
+                    dr[0] = key;
+                    dr[1] = result[key];
+                    m_dt52.Rows.Add(dr);
+                }
+                break;
+            case "3":
+                result = m_db.Get53(m_cfg.FieldUL, JCLSH);
+                m_dt53.Clear();
+                foreach (string key in result.Keys) {
+                    dr = m_dt53.NewRow();
+                    dr[0] = key;
+                    dr[1] = result[key];
+                    m_dt53.Rows.Add(dr);
+                }
+                break;
+            case "4":
+                result = m_db.Get54(m_cfg.FieldUL, JCLSH);
+                m_dt54.Clear();
+                foreach (string key in result.Keys) {
+                    dr = m_dt54.NewRow();
+                    dr[0] = key;
+                    dr[1] = result[key];
+                    m_dt54.Rows.Add(dr);
+                }
+                break;
+            }
+        }
+
+        private void ManualUpload() {
+            UploadField result = null;
+            try {
+                result = m_db.GetDynoDataByVIN(m_cfg.FieldUL, m_iCNLenb, this.txtBoxVIN.Text);
+            } catch (Exception ex) {
+                m_log.TraceError("GetDynoData error: " + ex.Message);
+            }
+            if (result == null) {
+                this.Invoke((EventHandler)delegate {
+                    this.lblManualUpload.ForeColor = Color.Red;
+                    this.lblManualUpload.Text = "VIN[" + result.VIN + "] 获取排放数据失败";
+                });
+            } else {
+                if (Upload(result, out string errorMsg)) {
+                    this.Invoke((EventHandler)delegate {
+                        this.lblManualUpload.ForeColor = Color.ForestGreen;
+                        this.lblManualUpload.Text = "VIN[" + result.VIN + "] 数据已手动上传";
+                    });
+                } else {
+                    if (errorMsg.Contains("Exception|")) {
+                        MessageBox.Show(errorMsg.Split('|')[1], "上传出错", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    } else {
+                        this.Invoke((EventHandler)delegate {
+                            this.lblManualUpload.ForeColor = Color.Red;
+                            this.lblManualUpload.Text = "VIN[" + result.VIN + "] " + errorMsg;
+                        });
+                    }
+                }
+            }
+        }
+
+        private void TxtBoxVIN_KeyPress(object sender, KeyPressEventArgs e) {
+            if (e.KeyChar == (char)Keys.Enter) {
+                TextBox tb = sender as TextBox;
+                string[] codes = tb.Text.Split('*');
+                if (codes != null) {
+                    if (codes.Length > 2) {
+                        this.txtBoxVIN.Text = codes[2];
+                    } else if (codes.Length == 1) {
+                        this.txtBoxVIN.Text = codes[0];
+                    }
+                    if (this.txtBoxVIN.Text.Length == 17) {
+                        this.lblManualUpload.ForeColor = Color.Black;
+                        this.lblManualUpload.Text = "手动上传就绪";
+                        ShowData(this.txtBoxVIN.Text);
+                        this.txtBoxVIN.SelectAll();
+                        this.lblManualUpload.ForeColor = Color.Black;
+                        this.lblManualUpload.Text = "数据显示完毕";
+                    }
+                }
+            }
+        }
+
+        private void MainForm_Load(object sender, EventArgs e) {
+            m_dtInfo = new DataTable();
+            m_dtInfo.Columns.Add("名称");
+            m_dtInfo.Columns.Add("数值");
+            this.GridViewInfo.DataSource = m_dtInfo;
+            SetGridViewColumnsSortMode(this.GridViewInfo, DataGridViewColumnSortMode.Programmatic);
+            m_dtEnv = new DataTable();
+            m_dtEnv.Columns.Add("名称");
+            m_dtEnv.Columns.Add("数值");
+            this.GridViewEnv.DataSource = m_dtEnv;
+            SetGridViewColumnsSortMode(this.GridViewEnv, DataGridViewColumnSortMode.Programmatic);
+            m_dtResult = new DataTable();
+            m_dtResult.Columns.Add("名称");
+            m_dtResult.Columns.Add("数值");
+            this.GridViewResult.DataSource = m_dtResult;
+            SetGridViewColumnsSortMode(this.GridViewResult, DataGridViewColumnSortMode.Programmatic);
+            m_dtDevice = new DataTable();
+            m_dtDevice.Columns.Add("名称");
+            m_dtDevice.Columns.Add("数值");
+            this.GridViewDevice.DataSource = m_dtDevice;
+            SetGridViewColumnsSortMode(this.GridViewDevice, DataGridViewColumnSortMode.Programmatic);
+            m_dt51 = new DataTable();
+            m_dt51.Columns.Add("名称");
+            m_dt51.Columns.Add("数值");
+            this.GridView51.DataSource = m_dt51;
+            SetGridViewColumnsSortMode(this.GridView51, DataGridViewColumnSortMode.Programmatic);
+            m_dt52 = new DataTable();
+            m_dt52.Columns.Add("名称");
+            m_dt52.Columns.Add("数值");
+            this.GridView52.DataSource = m_dt52;
+            SetGridViewColumnsSortMode(this.GridView52, DataGridViewColumnSortMode.Programmatic);
+            m_dt53 = new DataTable();
+            m_dt53.Columns.Add("名称");
+            m_dt53.Columns.Add("数值");
+            this.GridView53.DataSource = m_dt53;
+            SetGridViewColumnsSortMode(this.GridView53, DataGridViewColumnSortMode.Programmatic);
+            m_dt54 = new DataTable();
+            m_dt54.Columns.Add("名称");
+            m_dt54.Columns.Add("数值");
+            this.GridView54.DataSource = m_dt54;
+            SetGridViewColumnsSortMode(this.GridView54, DataGridViewColumnSortMode.Programmatic);
+            m_dt55 = new DataTable();
+            m_dt55.Columns.Add("名称");
+            m_dt55.Columns.Add("数值");
+            this.GridView55.DataSource = m_dt55;
+            SetGridViewColumnsSortMode(this.GridView55, DataGridViewColumnSortMode.Programmatic);
+            m_dt56 = new DataTable();
+            m_dt56.Columns.Add("名称");
+            m_dt56.Columns.Add("数值");
+            this.GridView56.DataSource = m_dt56;
+            SetGridViewColumnsSortMode(this.GridView56, DataGridViewColumnSortMode.Programmatic);
+        }
+
+        private void BtnUpload_Click(object sender, EventArgs e) {
+            m_log.TraceInfo("Manual Upload dyno data. Ver: " + MainFileVersion.AssemblyVersion);
+            Task.Factory.StartNew(ManualUpload);
+        }
     }
 
     public static class MainFileVersion {
