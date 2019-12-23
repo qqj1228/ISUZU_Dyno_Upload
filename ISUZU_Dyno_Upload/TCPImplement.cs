@@ -85,48 +85,48 @@ namespace ISUZU_Dyno_Upload {
         }
 
         private void SetEmissionInfo(EmissionInfo eiOUT, string[] eiIN) {
-            eiOUT.VI1.VIN = eiIN[0];
-            eiOUT.VI1.RegisterDate = DateTime.Now.ToLocalTime().ToString("yyyyMMdd");
-            eiOUT.VI1.ISQZ = "0";
-            eiOUT.VI1.VehicleType = "0";
-            eiOUT.VI1.CLXH = "testvehicletype";
-            eiOUT.VI1.FDJXH = "testenginetype";
-            eiOUT.VI1.HasOBD = "1";
-            eiOUT.VI1.FuelType = "0";
-            eiOUT.VI1.Standard = "6";
-            eiOUT.VI1.OBDCommCL = "1";
-            eiOUT.VI1.OBDCommCX = "1";
-            eiOUT.VI2.VehicleKind = "0";
-            eiOUT.VI2.VIN = eiIN[0];
-            eiOUT.VI2.RegisterDate = DateTime.Now.ToLocalTime().ToString("yyyyMMdd");
-            eiOUT.VI2.VehicleType = "0";
-            eiOUT.VI2.Model = "testmodel";
-            eiOUT.VI2.GearBoxType = "0";
-            eiOUT.VI2.AdmissionMode = "0";
-            eiOUT.VI2.Volume = "2.4";
-            eiOUT.VI2.FuelType = "0";
-            eiOUT.VI2.SupplyMode = "0";
-            eiOUT.VI2.RatedRev = "3000";
-            eiOUT.VI2.RatedPower = "2000.2";
-            eiOUT.VI2.DriveMode = "0";
-            eiOUT.VI2.MaxMass = "3000";
-            eiOUT.VI2.RefMass = "3000";
-            eiOUT.VI2.HasODB = "1";
-            eiOUT.VI2.HasPurge = "1";
-            eiOUT.VI2.IsEFI = "0";
-            eiOUT.VI2.MaxLoad = "5";
-            eiOUT.VI2.CarOrTruck = "0";
-            eiOUT.VI2.Cylinder = "4";
-            eiOUT.VI2.IsTransform = "0";
-            eiOUT.VI2.StandardID = "6";
-            eiOUT.VI2.IsAsm = "0";
-            eiOUT.LV.SmokeK = "0.5";
-            eiOUT.LV.SmokeNO = "0.5";
+            eiOUT.VehicleInfo1.VIN = eiIN[0];
+            eiOUT.VehicleInfo1.RegisterDate = DateTime.Now.ToLocalTime().ToString("yyyyMMdd");
+            eiOUT.VehicleInfo1.ISQZ = "0";
+            eiOUT.VehicleInfo1.VehicleType = "0";
+            eiOUT.VehicleInfo1.CLXH = "testvehicletype";
+            eiOUT.VehicleInfo1.FDJXH = "testenginetype";
+            eiOUT.VehicleInfo1.HasOBD = "1";
+            eiOUT.VehicleInfo1.FuelType = "0";
+            eiOUT.VehicleInfo1.Standard = "6";
+            eiOUT.VehicleInfo1.OBDCommCL = "1";
+            eiOUT.VehicleInfo1.OBDCommCX = "1";
+            eiOUT.VehicleInfo2.VehicleKind = "0";
+            eiOUT.VehicleInfo2.VIN = eiIN[0];
+            eiOUT.VehicleInfo2.RegisterDate = DateTime.Now.ToLocalTime().ToString("yyyyMMdd");
+            eiOUT.VehicleInfo2.VehicleType = "0";
+            eiOUT.VehicleInfo2.Model = "testmodel";
+            eiOUT.VehicleInfo2.GearBoxType = "0";
+            eiOUT.VehicleInfo2.AdmissionMode = "0";
+            eiOUT.VehicleInfo2.Volume = "2.4";
+            eiOUT.VehicleInfo2.FuelType = "0";
+            eiOUT.VehicleInfo2.SupplyMode = "0";
+            eiOUT.VehicleInfo2.RatedRev = "3000";
+            eiOUT.VehicleInfo2.RatedPower = "2000.2";
+            eiOUT.VehicleInfo2.DriveMode = "0";
+            eiOUT.VehicleInfo2.MaxMass = "3000";
+            eiOUT.VehicleInfo2.RefMass = "3000";
+            eiOUT.VehicleInfo2.HasODB = "1";
+            eiOUT.VehicleInfo2.HasPurge = "1";
+            eiOUT.VehicleInfo2.IsEFI = "0";
+            eiOUT.VehicleInfo2.MaxLoad = "5";
+            eiOUT.VehicleInfo2.CarOrTruck = "0";
+            eiOUT.VehicleInfo2.Cylinder = "4";
+            eiOUT.VehicleInfo2.IsTransform = "0";
+            eiOUT.VehicleInfo2.StandardID = "6";
+            eiOUT.VehicleInfo2.IsAsm = "0";
+            eiOUT.LimitValue.SmokeK = "0.5";
+            eiOUT.LimitValue.SmokeNO = "0.5";
         }
 
     }
 
-    public class VehicleInfo1 {
+    public class VehicleInfo1Class {
         public string License { get; set; }
         public string VIN { get; set; }
         public string RegisterDate { get; set; }
@@ -141,7 +141,7 @@ namespace ISUZU_Dyno_Upload {
         public string OBDCommCX { get; set; }
     }
 
-    public class VehicleInfo2 {
+    public class VehicleInfo2Class {
         public string VehicleKind { get; set; }
         public string License { get; set; }
         public string VIN { get; set; }
@@ -173,7 +173,7 @@ namespace ISUZU_Dyno_Upload {
         public string IsAsm { get; set; }
     }
 
-    public class LimitValue {
+    public class LimitValueClass {
         public string AmbientCOUp { get; set; }
         public string AmbientCO2Up { get; set; }
         public string AmbientHCUp { get; set; }
@@ -207,13 +207,13 @@ namespace ISUZU_Dyno_Upload {
     }
 
     public class EmissionInfo {
-        public VehicleInfo1 VI1 { get; set; }
-        public VehicleInfo2 VI2 { get; set; }
-        public LimitValue LV { get; set; }
+        public VehicleInfo1Class VehicleInfo1 { get; set; }
+        public VehicleInfo2Class VehicleInfo2 { get; set; }
+        public LimitValueClass LimitValue { get; set; }
         public EmissionInfo() {
-            VI1 = new VehicleInfo1();
-            VI2 = new VehicleInfo2();
-            LV = new LimitValue();
+            VehicleInfo1 = new VehicleInfo1Class();
+            VehicleInfo2 = new VehicleInfo2Class();
+            LimitValue = new LimitValueClass();
         }
     }
 }
