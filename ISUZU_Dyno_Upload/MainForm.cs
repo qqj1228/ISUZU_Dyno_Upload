@@ -13,9 +13,11 @@ using System.Windows.Forms;
 namespace ISUZU_Dyno_Upload {
     public partial class MainForm : Form {
         public Logger m_log;
+        public Logger m_logTCP;
         public Config m_cfg;
         public Model m_db;
         public ModelOracle m_dbOracle;
+        public TCPImplement m_dynoServer;
         public int m_iCNLenb;
         readonly System.Timers.Timer m_timer;
         public DataTable m_dtInfo;
@@ -33,7 +35,7 @@ namespace ISUZU_Dyno_Upload {
         public MainForm() {
             InitializeComponent();
             this.Text = "ISUZU_Dyno_Upload Ver: " + MainFileVersion.AssemblyVersion;
-            m_log = new Logger(".\\log", EnumLogLevel.LogLevelAll, true, 100);
+            m_log = new Logger("Upload", ".\\log", EnumLogLevel.LogLevelAll, true, 100);
             m_log.TraceInfo("==================================================================");
             m_log.TraceInfo("==================== START Ver: " + MainFileVersion.AssemblyVersion + " ====================");
             m_cfg = new Config(m_log);
@@ -57,6 +59,14 @@ namespace ISUZU_Dyno_Upload {
             m_timer.AutoReset = true;
             m_timer.Enabled = true;
 #endif
+            if (m_cfg.DynoParam.Enable) {
+                StartDynoServer();
+            }
+        }
+
+        private void StartDynoServer() {
+            m_logTCP = new Logger("DynoServer", ".\\log", EnumLogLevel.LogLevelAll, true, 100);
+            m_dynoServer = new TCPImplement(m_cfg.DynoParam, m_dbOracle, m_logTCP);
         }
 
         private void MainForm_Resize(object sender, EventArgs e) {

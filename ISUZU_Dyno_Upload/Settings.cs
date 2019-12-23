@@ -222,4 +222,17 @@ namespace ISUZU_Dyno_Upload {
             DYNOMANUF = "";
         }
     }
+
+    [Serializable]
+    public class DynoParameter {
+        public bool Enable { get; set; }
+        public int TCPPort { get; set; }
+
+        public DynoParameter() {
+            Enable = false;
+            TCPPort = 50001;
+        }
+    }
+
+
 }

@@ -19,6 +19,7 @@ namespace ISUZU_Dyno_Upload {
     /// 没有pdb文件的话，只能手工写在代码里
     /// </summary>
     public class Logger {
+        string Catalog { get; set; }
         EnumLogLevel LogLevel { get; set; }
         bool IsTraceLineNum { get; set; }
         string StrLogPath { get; set; }
@@ -27,20 +28,22 @@ namespace ISUZU_Dyno_Upload {
         Queue<string> FileQueue { get; set; }
         int MaxFileQty { get; set; }
 
-        public Logger() {
+        public Logger(string catalog) {
+            this.Catalog = catalog;
             this.LogLevel = EnumLogLevel.LogLevelNormal;
             this.IsTraceLineNum = true;
             this.ObjLock = new object();
-            this.StrLogPath = ".";
+            this.StrLogPath = ".\\log";
             this.MaxFileQty = 0;
             FileQueue = new Queue<string>();
             GenFileQueue();
         }
 
-        public Logger(string strLogPath, EnumLogLevel LogLevel, bool IsTraceLineNum, int maxFileQty) {
+        public Logger(string catalog, string strLogPath, EnumLogLevel LogLevel, bool IsTraceLineNum, int maxFileQty) {
+            this.Catalog = catalog;
             this.LogLevel = LogLevel;
             this.IsTraceLineNum = IsTraceLineNum;
-            this.StrLogPath = strLogPath;
+            this.StrLogPath = strLogPath + "\\" + catalog;
             this.ObjLock = new object();
             this.MaxFileQty = maxFileQty;
             FileQueue = new Queue<string>();
@@ -52,7 +55,7 @@ namespace ISUZU_Dyno_Upload {
             if (strLog.Length == 0) {
                 return;
             }
-            string strLineHead = GetLineHead("[ Fatal ]");
+            string strLineHead = GetLineHead("[XFatalX]");
             Trace(strLineHead + strLog);
         }
 
@@ -60,7 +63,7 @@ namespace ISUZU_Dyno_Upload {
             if (strLog.Length == 0 || LogLevel >= EnumLogLevel.LogLevelStop) {
                 return;
             }
-            string strLineHead = GetLineHead("[ Error ]");
+            string strLineHead = GetLineHead("[XErrorX]");
             Trace(strLineHead + strLog);
         }
 
@@ -87,7 +90,7 @@ namespace ISUZU_Dyno_Upload {
         /// 若生成新的文件名的话返回true，否则没有生成新的文件名的话返回false
         /// </returns>
         bool GenerateLogName() {
-            string strTemp = DateTime.Now.Date.ToString("yyyy-MM-dd") + ".log";
+            string strTemp = DateTime.Now.Date.ToString("yyyy-MM-dd_") + Catalog + ".log";
             if (StrLogName != strTemp) {
                 StrLogName = strTemp;
                 return true;
@@ -109,14 +112,14 @@ namespace ISUZU_Dyno_Upload {
                 strLineHead = string.Format(
                     "{0}-{1} {2} {3}({4})<{5}>: ",
                     DateTime.Now.ToShortDateString(),
-                    DateTime.Now.ToLongTimeString(),
+                    DateTime.Now.ToString("HH:mm:ss.fff"),
                     strInfo,
                     Path.GetFileName(sf.GetFileName()),
                     sf.GetFileLineNumber(),
                     sf.GetMethod().Name
                     );
             } else {
-                strLineHead = string.Format("{0}-{1} {2}: ", DateTime.Now.ToShortDateString(), DateTime.Now.ToLongTimeString(), strInfo);
+                strLineHead = string.Format("{0}-{1} {2}: ", DateTime.Now.ToShortDateString(), DateTime.Now.ToString("HH:mm:ss.fff"), strInfo);
             }
             return strLineHead;
         }

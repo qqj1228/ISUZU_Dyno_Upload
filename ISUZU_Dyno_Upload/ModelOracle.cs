@@ -187,5 +187,11 @@ namespace ISUZU_Dyno_Upload {
             }
             return iRet;
         }
+
+        public string[] GetEmissionInfo(string strVIN) {
+            string[] ret = new string[1];
+            ret[0] = strVIN;
+            return ret;
+        }
     }
 }

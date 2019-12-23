@@ -9,14 +9,17 @@ namespace ISUZU_Dyno_Upload {
     public class Config {
         public const string DBSetting_xml = ".\\Configs\\DBSetting.xml";
         public const string UploadField_xml = ".\\Configs\\UploadField.xml";
+        public const string DynoParameter_xml = ".\\Configs\\DynoParameter.xml";
         private readonly Logger m_log;
         public DBSetting DB { get; set; }
         public UploadField FieldUL { get; set; }
+        public DynoParameter DynoParam { get; set; }
 
         public Config(Logger logger) {
             m_log = logger;
             LoadDBSetting();
             LoadUploadField();
+            LoadDynoParameter();
         }
 
         public DBSetting LoadDBSetting() {
@@ -47,6 +50,20 @@ namespace ISUZU_Dyno_Upload {
             return FieldUL;
         }
 
+        public DynoParameter LoadDynoParameter() {
+            try {
+                XmlSerializer serializer = new XmlSerializer(typeof(DynoParameter));
+                using (FileStream reader = new FileStream(DynoParameter_xml, FileMode.Open)) {
+                    DynoParam = (DynoParameter)serializer.Deserialize(reader);
+                    reader.Close();
+                }
+            } catch (Exception ex) {
+                m_log.TraceError("Using default DynoParameter value because of failed to load them, reason: " + ex.Message);
+                DynoParam = new DynoParameter();
+            }
+            return DynoParam;
+        }
+
         public void SaveDBSetting() {
             if (this.DB is null) {
                 throw new ArgumentNullException(nameof(this.DB));
@@ -74,6 +91,21 @@ namespace ISUZU_Dyno_Upload {
                 }
             } catch (Exception ex) {
                 m_log.TraceError("Save UploadField error, reason: " + ex.Message);
+            }
+        }
+
+        public void SaveDynoParameter() {
+            if (this.DynoParam is null) {
+                throw new ArgumentNullException(nameof(this.DynoParam));
+            }
+            try {
+                XmlSerializer xmlSerializer = new XmlSerializer(typeof(DynoParameter));
+                using (TextWriter writer = new StreamWriter(DynoParameter_xml)) {
+                    xmlSerializer.Serialize(writer, this.DynoParam);
+                    writer.Close();
+                }
+            } catch (Exception ex) {
+                m_log.TraceError("Save DynoParameter error, reason: " + ex.Message);
             }
         }
 
