@@ -58,10 +58,12 @@ namespace ISUZU_Dyno_Upload {
                 IPEndPoint remoteAddress = (IPEndPoint)client.Client.RemoteEndPoint;
                 m_log.TraceInfo(string.Format("Received message[{0}], from {1}:{2}", strRecv, remoteAddress.Address, remoteAddress.Port));
                 byte[] sendMessage;
-                bool bRecvVIN = false;
-                if (strRecv != null && strRecv.Length == 17) {
+                string strVIN = "";
+                if (strRecv != null) {
+                    strVIN = strRecv.Trim();
+                }
+                if (strVIN.Length == 17) {
                     sendMessage = Encoding.UTF8.GetBytes("200");
-                    bRecvVIN = true;
                     m_log.TraceInfo("Received VIN is OK");
                 } else {
                     sendMessage = Encoding.UTF8.GetBytes("400");
@@ -69,8 +71,8 @@ namespace ISUZU_Dyno_Upload {
                 }
                 clientStream.Write(sendMessage, 0, sendMessage.Length);
                 clientStream.Flush();
-                if (bRecvVIN) {
-                    string[] emissionInfo = m_dbOracle.GetEmissionInfo(strRecv);
+                if (strVIN.Length == 17) {
+                    string[] emissionInfo = m_dbOracle.GetEmissionInfo(strVIN);
                     EmissionInfo ei = new EmissionInfo();
                     SetEmissionInfo(ei, emissionInfo);
                     string strSend = JsonConvert.SerializeObject(ei);
