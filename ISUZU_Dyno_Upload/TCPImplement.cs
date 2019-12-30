@@ -129,6 +129,8 @@ namespace ISUZU_Dyno_Upload {
             eiOUT.VehicleInfo2.CHZHQXH = "XXXX-YYY-ZZ";
             eiOUT.VehicleInfo2.HPYS = "蓝牌";
             eiOUT.VehicleInfo2.SCR = "有";
+            eiOUT.VehicleInfo2.DCRL = "60";
+            eiOUT.VehicleInfo2.JCFF = "加载减速";
             eiOUT.VehicleInfo2.SCRXH = "XXXX";
             eiOUT.LimitValue.SmokeK = "0.5";
             eiOUT.LimitValue.SmokeNO = "0.5";
@@ -191,7 +193,8 @@ namespace ISUZU_Dyno_Upload {
         public string SCRXH { get; set; }
         public string DPF { get; set; }
         public string DPFXH { get; set; }
-
+        public string DCRL { get; set; }
+        public string JCFF { get; set; }
     }
 
     public class LimitValueClass {
