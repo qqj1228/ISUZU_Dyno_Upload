@@ -122,6 +122,14 @@ namespace ISUZU_Dyno_Upload {
             eiOUT.VehicleInfo2.IsTransform = "0";
             eiOUT.VehicleInfo2.StandardID = "6";
             eiOUT.VehicleInfo2.IsAsm = "0";
+            eiOUT.VehicleInfo2.QCZZCJ = "江西五十铃";
+            eiOUT.VehicleInfo2.FDJZZC = "江西五十铃";
+            eiOUT.VehicleInfo2.DDJXH = "XXXX-YYY-ZZ";
+            eiOUT.VehicleInfo2.XNZZXH = "XXXX-YYY-ZZ";
+            eiOUT.VehicleInfo2.CHZHQXH = "XXXX-YYY-ZZ";
+            eiOUT.VehicleInfo2.HPYS = "蓝牌";
+            eiOUT.VehicleInfo2.SCR = "有";
+            eiOUT.VehicleInfo2.SCRXH = "XXXX";
             eiOUT.LimitValue.SmokeK = "0.5";
             eiOUT.LimitValue.SmokeNO = "0.5";
         }
@@ -173,6 +181,17 @@ namespace ISUZU_Dyno_Upload {
         public string IsTransform { get; set; }
         public string StandardID { get; set; }
         public string IsAsm { get; set; }
+        public string QCZZCJ { get; set; }
+        public string FDJZZC { get; set; }
+        public string DDJXH { get; set; }
+        public string XNZZXH { get; set; }
+        public string CHZHQXH { get; set; }
+        public string HPYS { get; set; }
+        public string SCR { get; set; }
+        public string SCRXH { get; set; }
+        public string DPF { get; set; }
+        public string DPFXH { get; set; }
+
     }
 
     public class LimitValueClass {
