@@ -39,8 +39,8 @@ namespace ISUZU_Dyno_Upload {
             m_log.TraceInfo("==================================================================");
             m_log.TraceInfo("==================== START Ver: " + MainFileVersion.AssemblyVersion + " ====================");
             m_cfg = new Config(m_log);
-            m_db = new Model(m_cfg.DB.SqlServer, m_log);
-            m_dbOracle = new ModelOracle(m_cfg.DB.Oracle, m_log);
+            m_db = new Model(m_cfg.DB.Data.SqlServer, m_log);
+            m_dbOracle = new ModelOracle(m_cfg.DB.Data.Oracle, m_log);
             m_iCNLenb = 3;
             try {
                 m_iCNLenb = m_dbOracle.GetCNLenb();
@@ -49,24 +49,24 @@ namespace ISUZU_Dyno_Upload {
                 MessageBox.Show("无法与MES通讯，请检查设置\n" + ex.Message, "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
 #if DEBUG
-            m_timer = new System.Timers.Timer(m_cfg.DB.Interval * 1000);
+            m_timer = new System.Timers.Timer(m_cfg.DB.Data.Interval * 1000);
             m_timer.Elapsed += new System.Timers.ElapsedEventHandler(OnTimeUpload);
             m_timer.AutoReset = false;
             m_timer.Enabled = true;
 #else
-            m_timer = new System.Timers.Timer(m_cfg.DB.Interval * 60 * 1000);
+            m_timer = new System.Timers.Timer(m_cfg.DB.Data.Interval * 60 * 1000);
             m_timer.Elapsed += new System.Timers.ElapsedEventHandler(OnTimeUpload);
             m_timer.AutoReset = true;
             m_timer.Enabled = true;
 #endif
-            if (m_cfg.DynoParam.Enable) {
+            if (m_cfg.DynoParam.Data.Enable) {
                 StartDynoServer();
             }
         }
 
         private void StartDynoServer() {
             m_logTCP = new Logger("DynoServer", ".\\log", EnumLogLevel.LogLevelAll, true, 100);
-            m_dynoServer = new TCPImplement(m_cfg.DynoParam, m_dbOracle, m_logTCP);
+            m_dynoServer = new TCPImplement(m_cfg.DynoParam.Data, m_cfg.DynoSimData.Data, m_dbOracle, m_logTCP);
         }
 
         private void MainForm_Resize(object sender, EventArgs e) {
@@ -172,7 +172,7 @@ namespace ISUZU_Dyno_Upload {
             m_log.TraceInfo("Upload dyno data OnTime. Ver: " + MainFileVersion.AssemblyVersion);
             List<UploadField> resultList = new List<UploadField>();
             try {
-                resultList = m_db.GetDynoData(m_cfg.FieldUL, m_iCNLenb);
+                resultList = m_db.GetDynoData(m_cfg.FieldUL.Data, m_iCNLenb);
             } catch (Exception ex) {
                 m_log.TraceError("GetDynoData error: " + ex.Message);
             }
@@ -627,7 +627,7 @@ namespace ISUZU_Dyno_Upload {
                 m_dtEnv.Rows.Add(dr);
             }
 
-            result = m_db.GetResult(m_cfg.FieldUL, JCLSH);
+            result = m_db.GetResult(m_cfg.FieldUL.Data, JCLSH);
             m_dtResult.Clear();
             foreach (string key in result.Keys) {
                 dr = m_dtResult.NewRow();
@@ -636,7 +636,7 @@ namespace ISUZU_Dyno_Upload {
                 m_dtResult.Rows.Add(dr);
             }
 
-            result = m_db.GetDevice(m_cfg.FieldUL, m_iCNLenb);
+            result = m_db.GetDevice(m_cfg.FieldUL.Data, m_iCNLenb);
             m_dtDevice.Clear();
             foreach (string key in result.Keys) {
                 dr = m_dtDevice.NewRow();
@@ -647,7 +647,7 @@ namespace ISUZU_Dyno_Upload {
 
             switch (m_dtResult.Rows[0][1]) {
             case "1":
-                result = m_db.Get51(m_cfg.FieldUL, JCLSH);
+                result = m_db.Get51(m_cfg.FieldUL.Data, JCLSH);
                 m_dt51.Clear();
                 foreach (string key in result.Keys) {
                     dr = m_dt51.NewRow();
@@ -657,7 +657,7 @@ namespace ISUZU_Dyno_Upload {
                 }
                 break;
             case "2":
-                result = m_db.Get52(m_cfg.FieldUL, JCLSH);
+                result = m_db.Get52(m_cfg.FieldUL.Data, JCLSH);
                 m_dt52.Clear();
                 foreach (string key in result.Keys) {
                     dr = m_dt52.NewRow();
@@ -667,7 +667,7 @@ namespace ISUZU_Dyno_Upload {
                 }
                 break;
             case "3":
-                result = m_db.Get53(m_cfg.FieldUL, JCLSH);
+                result = m_db.Get53(m_cfg.FieldUL.Data, JCLSH);
                 m_dt53.Clear();
                 foreach (string key in result.Keys) {
                     dr = m_dt53.NewRow();
@@ -677,7 +677,7 @@ namespace ISUZU_Dyno_Upload {
                 }
                 break;
             case "4":
-                result = m_db.Get54(m_cfg.FieldUL, JCLSH);
+                result = m_db.Get54(m_cfg.FieldUL.Data, JCLSH);
                 m_dt54.Clear();
                 foreach (string key in result.Keys) {
                     dr = m_dt54.NewRow();
@@ -692,7 +692,7 @@ namespace ISUZU_Dyno_Upload {
         private void ManualUpload() {
             UploadField result = null;
             try {
-                result = m_db.GetDynoDataByVIN(m_cfg.FieldUL, m_iCNLenb, this.txtBoxVIN.Text);
+                result = m_db.GetDynoDataByVIN(m_cfg.FieldUL.Data, m_iCNLenb, this.txtBoxVIN.Text);
             } catch (Exception ex) {
                 m_log.TraceError("GetDynoData error: " + ex.Message);
             }

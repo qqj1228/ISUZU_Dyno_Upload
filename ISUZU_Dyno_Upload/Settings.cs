@@ -227,12 +227,120 @@ namespace ISUZU_Dyno_Upload {
     public class DynoParameter {
         public bool Enable { get; set; }
         public int TCPPort { get; set; }
+        public bool UseSimData { get; set; }
 
         public DynoParameter() {
             Enable = false;
             TCPPort = 50001;
+            UseSimData = false;
         }
     }
 
+    [Serializable]
+    public class VehicleInfo1Class {
+        public string License { get; set; }
+        public string VIN { get; set; }
+        public string RegisterDate { get; set; }
+        public string ISQZ { get; set; }
+        public string VehicleType { get; set; }
+        public string CLXH { get; set; }
+        public string FDJXH { get; set; }
+        public string HasOBD { get; set; }
+        public string FuelType { get; set; }
+        public string Standard { get; set; }
+        public string OBDCommCL { get; set; }
+        public string OBDCommCX { get; set; }
+    }
+
+    [Serializable]
+    public class VehicleInfo2Class {
+        public string VehicleKind { get; set; }
+        public string License { get; set; }
+        public string VIN { get; set; }
+        public string RegisterDate { get; set; }
+        public string VehicleType { get; set; }
+        public string Model { get; set; }
+        public string GearBoxType { get; set; }
+        public string AdmissionMode { get; set; }
+        public string Volume { get; set; }
+        public string Odometer { get; set; }
+        public string FuelType { get; set; }
+        public string SupplyMode { get; set; }
+        public string RatedRev { get; set; }
+        public string RatedPower { get; set; }
+        public string DriveMode { get; set; }
+        public string Owner { get; set; }
+        public string Address { get; set; }
+        public string MaxMass { get; set; }
+        public string RefMass { get; set; }
+        public string HasODB { get; set; }
+        public string Phone { get; set; }
+        public string HasPurge { get; set; }
+        public string IsEFI { get; set; }
+        public string MaxLoad { get; set; }
+        public string CarOrTruck { get; set; }
+        public string Cylinder { get; set; }
+        public string IsTransform { get; set; }
+        public string StandardID { get; set; }
+        public string IsAsm { get; set; }
+        public string QCZZCJ { get; set; }
+        public string FDJZZC { get; set; }
+        public string DDJXH { get; set; }
+        public string XNZZXH { get; set; }
+        public string CHZHQXH { get; set; }
+        public string HPYS { get; set; }
+        public string SCR { get; set; }
+        public string SCRXH { get; set; }
+        public string DPF { get; set; }
+        public string DPFXH { get; set; }
+        public string DCRL { get; set; }
+        public string JCFF { get; set; }
+    }
+
+    [Serializable]
+    public class LimitValueClass {
+        public string AmbientCOUp { get; set; }
+        public string AmbientCO2Up { get; set; }
+        public string AmbientHCUp { get; set; }
+        public string AmbientNOUp { get; set; }
+        public string BackgroundCOUp { get; set; }
+        public string BackgroundCO2Up { get; set; }
+        public string BackgroundHCUp { get; set; }
+        public string BackgroundNOUp { get; set; }
+        public string ResidualHCUp { get; set; }
+        public string CO5025 { get; set; }
+        public string HC5025 { get; set; }
+        public string NO5025 { get; set; }
+        public string Lambda5025Up { get; set; }
+        public string Lambda5025Below { get; set; }
+        public string CO2540 { get; set; }
+        public string HC2540 { get; set; }
+        public string NO2540 { get; set; }
+        public string Lambda2540Up { get; set; }
+        public string Lambda2540Below { get; set; }
+        public string COAndCO2 { get; set; }
+        public string HighIdleCO { get; set; }
+        public string HighIdleHC { get; set; }
+        public string IdleCO { get; set; }
+        public string IdleHC { get; set; }
+        public string FASmokeHSU { get; set; }
+        public string FASmokeK { get; set; }
+        public string SmokeK { get; set; }
+        public string SmokeHSU { get; set; }
+        public string SmokeNO { get; set; }
+        public string MaxPower { get; set; }
+    }
+
+    [Serializable]
+    public class EmissionInfo {
+        public VehicleInfo1Class VehicleInfo1 { get; set; }
+        public VehicleInfo2Class VehicleInfo2 { get; set; }
+        public LimitValueClass LimitValue { get; set; }
+        public EmissionInfo() {
+            VehicleInfo1 = new VehicleInfo1Class();
+            VehicleInfo2 = new VehicleInfo2Class();
+            LimitValue = new LimitValueClass();
+        }
+    }
 
 }
