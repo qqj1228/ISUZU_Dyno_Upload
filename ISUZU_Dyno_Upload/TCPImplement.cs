@@ -55,13 +55,14 @@ namespace ISUZU_Dyno_Upload {
                 if (bytesRead == 0) {
                     break;
                 }
+                m_log.TraceInfo(">>>>>>>> Start to handle client request. Ver: " + MainFileVersion.AssemblyVersion + " <<<<<<<<");
                 strRecv = Encoding.UTF8.GetString(recv, 0, bytesRead);
                 IPEndPoint remoteAddress = (IPEndPoint)client.Client.RemoteEndPoint;
                 m_log.TraceInfo(string.Format("Received message[{0}], from {1}:{2}", strRecv, remoteAddress.Address, remoteAddress.Port));
                 byte[] sendMessage;
                 string strVIN = "";
                 if (strRecv != null) {
-                    strVIN = strRecv.Trim();
+                    strVIN = strRecv.Split(',')[0].Trim();
                 }
                 if (strVIN.Length == 17) {
                     sendMessage = Encoding.UTF8.GetBytes("200");

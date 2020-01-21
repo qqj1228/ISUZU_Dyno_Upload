@@ -169,7 +169,7 @@ namespace ISUZU_Dyno_Upload {
         }
 
         private void OnTimeUpload(object source, System.Timers.ElapsedEventArgs e) {
-            m_log.TraceInfo("Upload dyno data OnTime. Ver: " + MainFileVersion.AssemblyVersion);
+            m_log.TraceInfo(">>>>>>>> Upload dyno data OnTime. Ver: " + MainFileVersion.AssemblyVersion + " <<<<<<<<");
             List<UploadField> resultList = new List<UploadField>();
             try {
                 resultList = m_db.GetDynoData(m_cfg.FieldUL.Data, m_iCNLenb);
@@ -796,7 +796,7 @@ namespace ISUZU_Dyno_Upload {
         }
 
         private void BtnUpload_Click(object sender, EventArgs e) {
-            m_log.TraceInfo("Manual Upload dyno data. Ver: " + MainFileVersion.AssemblyVersion);
+            m_log.TraceInfo(">>>>>>>> Manual Upload dyno data. Ver: " + MainFileVersion.AssemblyVersion + " <<<<<<<<");
             Task.Factory.StartNew(ManualUpload);
         }
     }

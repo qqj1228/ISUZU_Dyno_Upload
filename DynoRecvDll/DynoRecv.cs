@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.Sockets;
+using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace DynoRecvDll {
     public class DynoRecv {
@@ -11,6 +14,7 @@ namespace DynoRecvDll {
         private readonly int m_bufSize;
         private readonly byte[] m_recvBuf;
         private string m_strRecv;
+        public event EventHandler<RecvDynoInfoEventArgs> RecvDynoInfo;
 
         public DynoRecv(string hostName, int port) {
             try {
@@ -39,13 +43,16 @@ namespace DynoRecvDll {
             }
         }
 
-        public bool GetDynoInfo(string strVIN, out string strRecvMsg) {
-            bool bRet = false;
-            strRecvMsg = "";
-            byte[] sendMessage = Encoding.UTF8.GetBytes(strVIN);
+        public void SendVIN(string strVIN) {
+            // 发送VIN号和客户端dll版本，以“,”分隔
+            byte[] sendMessage = Encoding.UTF8.GetBytes(strVIN + ",dll" + DllVersion<DynoRecv>.AssemblyVersion);
             m_clientStream.Write(sendMessage, 0, sendMessage.Length);
             m_clientStream.Flush();
+            Task.Factory.StartNew(RecvMsg);
+        }
 
+        private void RecvMsg() {
+            RecvDynoInfoEventArgs args = new RecvDynoInfoEventArgs();
             int bytesRead;
             m_strRecv = "";
             try {
@@ -54,7 +61,10 @@ namespace DynoRecvDll {
                     m_strRecv += Encoding.UTF8.GetString(m_recvBuf, 0, bytesRead);
                 } while (m_clientStream.DataAvailable);
             } catch (Exception ex) {
-                throw new ApplicationException("发送VIN号后，接收返回信息出错：" + ex.Message);
+                args.Code = "600";
+                args.Msg = "发送VIN号后，接收返回信息出错：" + ex.Message;
+                RecvDynoInfo?.Invoke(this, args);
+                return;
             }
 
             // TCP接收的数据会有粘包现象，需要拆包操作
@@ -67,15 +77,42 @@ namespace DynoRecvDll {
                             m_strRecv += Encoding.UTF8.GetString(m_recvBuf, 0, bytesRead);
                         } while (m_clientStream.DataAvailable);
                     } catch (Exception ex) {
-                        throw new ApplicationException("接收Dyno参数出错：" + ex.Message);
+                        args.Code = "600";
+                        args.Msg = "接收测功机参数出错：" + ex.Message;
+                        RecvDynoInfo?.Invoke(this, args);
+                        return;
                     }
                 } else {
                     m_strRecv = m_strRecv.Substring(3);
                 }
-                bRet = true;
+                args.Code = "200";
+                args.Msg = m_strRecv;
+            } else {
+                if (m_strRecv.Length >= 3) {
+                    args.Code = m_strRecv.Substring(0, 3);
+                    if (args.Code == "400") {
+                        args.Msg = "VIN号格式错误";
+                    } else {
+                        args.Msg = m_strRecv.Substring(3);
+                    }
+                } else {
+                    args.Code = "600";
+                    args.Msg = "未知错误";
+                }
             }
-            strRecvMsg = m_strRecv;
-            return bRet;
+            RecvDynoInfo?.Invoke(this, args);
         }
     }
+
+    public class RecvDynoInfoEventArgs : EventArgs {
+        public string Code { get; set; }
+        public string Msg { get; set; }
+    }
+
+    public static class DllVersion<T> {
+        public static Version AssemblyVersion {
+            get { return ((Assembly.GetAssembly(typeof(T))).GetName()).Version; }
+        }
+    }
+
 }
