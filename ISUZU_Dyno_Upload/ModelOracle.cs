@@ -182,16 +182,68 @@ namespace ISUZU_Dyno_Upload {
             int iRet = 0;
             string strSQL = "select lengthb('好') from dual";
             string strLenb = QueryOne(strSQL).ToString();
-            if(int.TryParse(strLenb, out int result)) {
+            if (int.TryParse(strLenb, out int result)) {
                 iRet = result;
             }
             return iRet;
         }
 
-        public string[] GetEmissionInfo(string strVIN) {
-            string[] ret = new string[1];
-            ret[0] = strVIN;
-            return ret;
+        /// <summary>
+        /// 从MES获取测功机检测尾气的参数，返回DataTable数组[VehicleInfo1, VehicleInfo2]
+        /// </summary>
+        /// <param name="strVIN"></param>
+        /// <returns></returns>
+        public void GetEmissionInfo(string strVIN, EmissionInfo ei) {
+            string strSQL = "select * from VEHICLEINFO1 where VIN = '" + strVIN + "'";
+            DataTable dt1 = new DataTable("VehicleInfo1");
+            Query(strSQL, dt1);
+            if (dt1.Rows.Count > 0) {
+                DataRow dr1 = dt1.Rows[dt1.Rows.Count - 1];
+                ei.VehicleInfo1.VIN = dr1["VIN"].ToString();
+                ei.VehicleInfo1.VehicleType = dr1["VEHICLETYPE"].ToString();
+                ei.VehicleInfo1.ISQZ = dr1["ISQZ"].ToString();
+                ei.VehicleInfo1.CLXH = dr1["CLXH"].ToString();
+                ei.VehicleInfo1.FDJXH = dr1["FDJXH"].ToString();
+                ei.VehicleInfo1.HasOBD = dr1["HASOBD"].ToString();
+                ei.VehicleInfo1.FuelType = dr1["FUELTYPE"].ToString();
+                ei.VehicleInfo1.Standard = dr1["STANDARD"].ToString();
+            }
+            strSQL = "select * from VEHICLEINFO2 where VIN = '" + strVIN + "'";
+            DataTable dt2 = new DataTable("VehicleInfo2");
+            Query(strSQL, dt2);
+            if (dt2.Rows.Count > 0) {
+                DataRow dr2 = dt2.Rows[dt2.Rows.Count - 1];
+                ei.VehicleInfo2.VIN = dr2["VIN"].ToString();
+                ei.VehicleInfo2.VehicleKind = dr2["VEHICLEKIND"].ToString();
+                ei.VehicleInfo2.VehicleType = dr2["VEHICLETYPE"].ToString();
+                ei.VehicleInfo2.Model = dr2["MODEL"].ToString();
+                ei.VehicleInfo2.GearBoxType = dr2["GEARBOXTYPE"].ToString();
+                ei.VehicleInfo2.AdmissionMode = dr2["ADMISSIONMODE"].ToString();
+                ei.VehicleInfo2.Volume = dr2["VOLUME"].ToString();
+                ei.VehicleInfo2.FuelType = dr2["FUELTYPE"].ToString();
+                ei.VehicleInfo2.RatedRev = dr2["RATEDREV"].ToString();
+                ei.VehicleInfo2.RatedPower = dr2["RATEDPOWER"].ToString();
+                ei.VehicleInfo2.DriveMode = dr2["DRIVEMODE"].ToString();
+                ei.VehicleInfo2.MaxMass = dr2["MAXMASS"].ToString();
+                ei.VehicleInfo2.RefMass = dr2["REFMASS"].ToString();
+                ei.VehicleInfo2.HasODB = dr2["HASODB"].ToString();
+                ei.VehicleInfo2.HasPurge = dr2["HASPURGE"].ToString();
+                ei.VehicleInfo2.IsEFI = dr2["ISEFI"].ToString();
+                ei.VehicleInfo2.CarOrTruck = dr2["CARORTRUCK"].ToString();
+                ei.VehicleInfo2.StandardID = dr2["STANDARDID"].ToString();
+                ei.VehicleInfo2.IsAsm = dr2["ISASM"].ToString();
+                ei.VehicleInfo2.QCZZCJ = dr2["QCZZCJ"].ToString();
+                ei.VehicleInfo2.FDJZZC = dr2["FDJZZC"].ToString();
+                ei.VehicleInfo2.DDJXH = dr2["DDJXH"].ToString();
+                ei.VehicleInfo2.XNZZXH = dr2["XNZZXH"].ToString();
+                ei.VehicleInfo2.CHZHQXH = dr2["CHZHQXH"].ToString();
+                ei.VehicleInfo2.SCR = dr2["SCR"].ToString();
+                ei.VehicleInfo2.SCRXH = dr2["SCRXH"].ToString();
+                ei.VehicleInfo2.DPF = dr2["DPF"].ToString();
+                ei.VehicleInfo2.DPFXH = dr2["DPFXH"].ToString();
+                ei.VehicleInfo2.DCRL = dr2["DCRL"].ToString();
+                ei.VehicleInfo2.JCFF = dr2["JCFF"].ToString();
+            }
         }
     }
 }

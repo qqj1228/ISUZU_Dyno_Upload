@@ -74,14 +74,17 @@ namespace ISUZU_Dyno_Upload {
                 clientStream.Write(sendMessage, 0, sendMessage.Length);
                 clientStream.Flush();
                 if (strVIN.Length == 17) {
-                    string[] emissionInfo = m_dbOracle.GetEmissionInfo(strVIN);
                     EmissionInfo ei = new EmissionInfo();
                     if (m_dynoParam.UseSimData) {
                         ei = m_emiInfo;
-                        ei.VehicleInfo1.VIN = emissionInfo[0];
-                        ei.VehicleInfo2.VIN = emissionInfo[0];
+                        ei.VehicleInfo1.VIN = strVIN;
+                        ei.VehicleInfo2.VIN = strVIN;
                     } else {
-                        SetEmissionInfo(ei, emissionInfo);
+                        try {
+                            m_dbOracle.GetEmissionInfo(strVIN, ei);
+                        } catch (Exception ex) {
+                            m_log.TraceError("GetEmissionInfo() error: " + ex.Message);
+                        }
                     }
                     string strSend = JsonConvert.SerializeObject(ei);
                     m_log.TraceInfo("Send dyno information: " + strSend);
@@ -93,57 +96,6 @@ namespace ISUZU_Dyno_Upload {
             clientStream.Close();
             client.Close();
         }
-
-        private void SetEmissionInfo(EmissionInfo eiOUT, string[] eiIN) {
-            eiOUT.VehicleInfo1.VIN = eiIN[0];
-            eiOUT.VehicleInfo1.RegisterDate = DateTime.Now.ToLocalTime().ToString("yyyyMMdd");
-            eiOUT.VehicleInfo1.ISQZ = "0";
-            eiOUT.VehicleInfo1.VehicleType = "0";
-            eiOUT.VehicleInfo1.CLXH = "testvehicletype";
-            eiOUT.VehicleInfo1.FDJXH = "testenginetype";
-            eiOUT.VehicleInfo1.HasOBD = "1";
-            eiOUT.VehicleInfo1.FuelType = "0";
-            eiOUT.VehicleInfo1.Standard = "6";
-            eiOUT.VehicleInfo1.OBDCommCL = "1";
-            eiOUT.VehicleInfo1.OBDCommCX = "1";
-            eiOUT.VehicleInfo2.VehicleKind = "0";
-            eiOUT.VehicleInfo2.VIN = eiIN[0];
-            eiOUT.VehicleInfo2.RegisterDate = DateTime.Now.ToLocalTime().ToString("yyyyMMdd");
-            eiOUT.VehicleInfo2.VehicleType = "0";
-            eiOUT.VehicleInfo2.Model = "testmodel";
-            eiOUT.VehicleInfo2.GearBoxType = "0";
-            eiOUT.VehicleInfo2.AdmissionMode = "0";
-            eiOUT.VehicleInfo2.Volume = "2.4";
-            eiOUT.VehicleInfo2.FuelType = "0";
-            eiOUT.VehicleInfo2.SupplyMode = "0";
-            eiOUT.VehicleInfo2.RatedRev = "3000";
-            eiOUT.VehicleInfo2.RatedPower = "2000.2";
-            eiOUT.VehicleInfo2.DriveMode = "0";
-            eiOUT.VehicleInfo2.MaxMass = "3000";
-            eiOUT.VehicleInfo2.RefMass = "3000";
-            eiOUT.VehicleInfo2.HasODB = "1";
-            eiOUT.VehicleInfo2.HasPurge = "1";
-            eiOUT.VehicleInfo2.IsEFI = "0";
-            eiOUT.VehicleInfo2.MaxLoad = "5";
-            eiOUT.VehicleInfo2.CarOrTruck = "0";
-            eiOUT.VehicleInfo2.Cylinder = "4";
-            eiOUT.VehicleInfo2.IsTransform = "0";
-            eiOUT.VehicleInfo2.StandardID = "6";
-            eiOUT.VehicleInfo2.IsAsm = "0";
-            eiOUT.VehicleInfo2.QCZZCJ = "江西五十铃";
-            eiOUT.VehicleInfo2.FDJZZC = "江西五十铃";
-            eiOUT.VehicleInfo2.DDJXH = "XXXX-YYY-ZZ";
-            eiOUT.VehicleInfo2.XNZZXH = "XXXX-YYY-ZZ";
-            eiOUT.VehicleInfo2.CHZHQXH = "XXXX-YYY-ZZ";
-            eiOUT.VehicleInfo2.HPYS = "蓝牌";
-            eiOUT.VehicleInfo2.SCR = "有";
-            eiOUT.VehicleInfo2.SCRXH = "XXXX";
-            eiOUT.VehicleInfo2.DCRL = "60";
-            eiOUT.VehicleInfo2.JCFF = "加载减速";
-            eiOUT.LimitValue.SmokeK = "0.5";
-            eiOUT.LimitValue.SmokeNO = "0.5";
-        }
-
     }
 
 }

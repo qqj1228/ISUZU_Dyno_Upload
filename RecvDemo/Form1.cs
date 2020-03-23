@@ -21,7 +21,7 @@ namespace RecvDemo {
         /// <summary>
         /// 数据接收 DynoRecvDll.dll 使用方法：
         /// 1、使用之前需要先引入 DynoRecvDll 命名空间
-        /// 2、先新建一个 DynoRecv 对象，构造函数原型 GetDynoInfo(string hostName, int port)
+        /// 2、先新建一个 DynoRecv 对象，构造函数原型 DynoRecv(string hostName, int port)
         ///    string hostName：服务器IP地址
         ///    int port：服务器端口号
         /// 3、在构造函数中会连接服务器，如果没有抛出异常说明已经成功连上服务器了
@@ -46,7 +46,7 @@ namespace RecvDemo {
         private void BtnSend_Click(object sender, EventArgs e) {
             DynoRecv recv = null;
             try {
-                // 新建DynoRecv对象，同时连接服务器
+                // 新建DynoRecv对象，在构造函数内会尝试连接服务器
                 recv = new DynoRecv("127.0.0.1", 50001);
             } catch (Exception ex) {
                 this.txtBoxRecv.Text = ex.Message;
