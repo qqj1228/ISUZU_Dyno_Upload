@@ -8,29 +8,29 @@ using System.Text;
 namespace ISUZU_Dyno_Upload {
     public class ModelOracle {
         public readonly Logger m_log;
-        public OracleMES m_oracleMES;
-        private string Connection { get; set; }
+        private string ConnectionMes { get; set; }
+        private string ConnectionDyno { get; set; }
         public bool Connected { get; set; }
 
-        public ModelOracle(OracleMES oracleMES, Logger log) {
+        public ModelOracle(OracleMES oracleMES, OracleMES oracleDyno, Logger log) {
             m_log = log;
-            m_oracleMES = oracleMES;
-            this.Connection = "";
-            ReadConfig();
+            ConnectionMes = ReadConfig(oracleMES);
+            ConnectionDyno = ReadConfig(oracleDyno);
             Connected = false;
         }
 
-        void ReadConfig() {
-            Connection = "Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=";
-            Connection += m_oracleMES.Host + ")(PORT=";
-            Connection += m_oracleMES.Port + "))(CONNECT_DATA=(SERVICE_NAME=";
-            Connection += m_oracleMES.ServiceName + ")));";
-            Connection += "Persist Security Info=True;";
-            Connection += "User ID=" + m_oracleMES.UserID + ";";
-            Connection += "Password=" + m_oracleMES.PassWord + ";";
+        string ReadConfig(OracleMES cfg) {
+            string strRet = "Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=";
+            strRet += cfg.Host + ")(PORT=";
+            strRet += cfg.Port + "))(CONNECT_DATA=(SERVICE_NAME=";
+            strRet += cfg.ServiceName + ")));";
+            strRet += "Persist Security Info=True;";
+            strRet += "User ID=" + cfg.UserID + ";";
+            strRet += "Password=" + cfg.PassWord + ";";
+            return strRet;
         }
 
-        public bool ConnectOracle() {
+        public bool ConnectOracle(string Connection) {
             Connected = false;
             try {
                 OracleConnection con = new OracleConnection(Connection);
@@ -51,7 +51,7 @@ namespace ISUZU_Dyno_Upload {
         /// <param name="connectionString"></param>
         /// <param name="strSQL"></param>
         /// <returns></returns>
-        private int ExecuteNonQuery(string strSQL) {
+        private int ExecuteNonQuery(string strSQL, string Connection) {
             using (OracleConnection connection = new OracleConnection(Connection)) {
                 int val = -1;
                 try {
@@ -72,7 +72,7 @@ namespace ISUZU_Dyno_Upload {
             }
         }
 
-        private void Query(string strSQL, DataTable dt) {
+        private void Query(string strSQL, DataTable dt, string Connection) {
             using (OracleConnection connection = new OracleConnection(Connection)) {
                 try {
                     connection.Open();
@@ -90,7 +90,7 @@ namespace ISUZU_Dyno_Upload {
             }
         }
 
-        private object QueryOne(string strSQL) {
+        private object QueryOne(string strSQL, string Connection) {
             using (OracleConnection connection = new OracleConnection(Connection)) {
                 using (OracleCommand cmd = new OracleCommand(strSQL, connection)) {
                     try {
@@ -114,7 +114,7 @@ namespace ISUZU_Dyno_Upload {
             }
         }
 
-        public int InsertRecords(string strTable, DataTable dt) {
+        public int InsertRecords(string strTable, DataTable dt, OracleDB DBType = OracleDB.MES) {
             int iRet = 0;
             for (int iRow = 0; iRow < dt.Rows.Count; iRow++) {
                 string strSQL = "insert into " + strTable + " (ID,";
@@ -136,12 +136,16 @@ namespace ISUZU_Dyno_Upload {
                 }
                 strSQL = strSQL.Trim(',');
                 strSQL += ")";
-                iRet += ExecuteNonQuery(strSQL);
+                if (DBType == OracleDB.MES) {
+                    iRet += ExecuteNonQuery(strSQL, ConnectionMes);
+                } else if (DBType == OracleDB.Dyno) {
+                    iRet += ExecuteNonQuery(strSQL, ConnectionDyno);
+                }
             }
             return iRet;
         }
 
-        public int UpdateRecords(string strTable, DataTable dt, string strWhereKey, string[] strWhereValues) {
+        public int UpdateRecords(string strTable, DataTable dt, string strWhereKey, string[] strWhereValues, OracleDB DBType = OracleDB.MES) {
             int iRet = 0;
             if (dt.Rows.Count != strWhereValues.Length) {
                 return -1;
@@ -159,15 +163,23 @@ namespace ISUZU_Dyno_Upload {
                 }
                 strSQL = strSQL.Trim(',');
                 strSQL += " where " + strWhereKey + "='" + strWhereValues[iRow] + "'";
-                iRet += ExecuteNonQuery(strSQL);
+                if (DBType == OracleDB.MES) {
+                    iRet += ExecuteNonQuery(strSQL, ConnectionMes);
+                } else if (DBType == OracleDB.Dyno) {
+                    iRet += ExecuteNonQuery(strSQL, ConnectionDyno);
+                }
             }
             return iRet;
         }
 
-        public string[] GetValue(string strTable, string strField, string strWhereKey, string strWhereValue) {
+        public string[] GetValue(string strTable, string strField, string strWhereKey, string strWhereValue, OracleDB DBType = OracleDB.MES) {
             string strSQL = "select " + strField + " from " + strTable + " where " + strWhereKey + " = '" + strWhereValue + "'";
             DataTable dt = new DataTable();
-            Query(strSQL, dt);
+            if (DBType == OracleDB.MES) {
+                Query(strSQL, dt, ConnectionMes);
+            } else if (DBType == OracleDB.Dyno) {
+                Query(strSQL, dt, ConnectionDyno);
+            }
             string[] values = new string[dt.Rows.Count];
             for (int i = 0; i < dt.Rows.Count; i++) {
                 values[i] = dt.Rows[i][0].ToString();
@@ -178,25 +190,21 @@ namespace ISUZU_Dyno_Upload {
         }
 
 
-        public int GetCNLenb() {
+        public int GetCNLenb(OracleDB DBType = OracleDB.MES) {
             int iRet = 0;
             string strSQL = "select lengthb('好') from dual";
-            string strLenb = QueryOne(strSQL).ToString();
-            if (int.TryParse(strLenb, out int result)) {
-                iRet = result;
+            if (DBType == OracleDB.MES) {
+                iRet = Convert.ToInt32(QueryOne(strSQL, ConnectionMes));
+            } else if (DBType == OracleDB.Dyno) {
+                iRet = Convert.ToInt32(QueryOne(strSQL, ConnectionDyno));
             }
             return iRet;
         }
 
-        /// <summary>
-        /// 从MES获取测功机检测尾气的参数，返回DataTable数组[VehicleInfo1, VehicleInfo2]
-        /// </summary>
-        /// <param name="strVIN"></param>
-        /// <returns></returns>
         public void GetEmissionInfo(string strVIN, EmissionInfo ei) {
-            string strSQL = "select * from VEHICLEINFO1 where VIN = '" + strVIN + "'";
-            DataTable dt1 = new DataTable("VehicleInfo1");
-            Query(strSQL, dt1);
+            string strSQL = "select * from IF_VEHICLEINFO1 where VIN = '" + strVIN + "'";
+            DataTable dt1 = new DataTable("IF_VehicleInfo1");
+            Query(strSQL, dt1, ConnectionDyno);
             if (dt1.Rows.Count > 0) {
                 DataRow dr1 = dt1.Rows[dt1.Rows.Count - 1];
                 ei.VehicleInfo1.VIN = dr1["VIN"].ToString();
@@ -208,9 +216,9 @@ namespace ISUZU_Dyno_Upload {
                 ei.VehicleInfo1.FuelType = dr1["FUELTYPE"].ToString();
                 ei.VehicleInfo1.Standard = dr1["STANDARD"].ToString();
             }
-            strSQL = "select * from VEHICLEINFO2 where VIN = '" + strVIN + "'";
-            DataTable dt2 = new DataTable("VehicleInfo2");
-            Query(strSQL, dt2);
+            strSQL = "select * from IF_VEHICLEINFO2 where VIN = '" + strVIN + "'";
+            DataTable dt2 = new DataTable("IF_VehicleInfo2");
+            Query(strSQL, dt2, ConnectionDyno);
             if (dt2.Rows.Count > 0) {
                 DataRow dr2 = dt2.Rows[dt2.Rows.Count - 1];
                 ei.VehicleInfo2.VIN = dr2["VIN"].ToString();
@@ -229,7 +237,10 @@ namespace ISUZU_Dyno_Upload {
                 ei.VehicleInfo2.HasODB = dr2["HASODB"].ToString();
                 ei.VehicleInfo2.HasPurge = dr2["HASPURGE"].ToString();
                 ei.VehicleInfo2.IsEFI = dr2["ISEFI"].ToString();
+                ei.VehicleInfo2.MaxLoad = dr2["MAXLOAD"].ToString();
                 ei.VehicleInfo2.CarOrTruck = dr2["CARORTRUCK"].ToString();
+                ei.VehicleInfo2.Cylinder = dr2["CYLINDER"].ToString();
+                ei.VehicleInfo2.IsTransform = dr2["ISTRANSFORM"].ToString();
                 ei.VehicleInfo2.StandardID = dr2["STANDARDID"].ToString();
                 ei.VehicleInfo2.IsAsm = dr2["ISASM"].ToString();
                 ei.VehicleInfo2.QCZZCJ = dr2["QCZZCJ"].ToString();

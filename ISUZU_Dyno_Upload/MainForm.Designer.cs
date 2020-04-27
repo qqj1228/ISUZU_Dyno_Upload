@@ -27,7 +27,6 @@
             this.GridViewInfo = new System.Windows.Forms.DataGridView();
             this.btnUpload = new System.Windows.Forms.Button();
             this.txtBoxVIN = new System.Windows.Forms.TextBox();
-            this.lblManualUpload = new System.Windows.Forms.Label();
             this.grpBoxEnv = new System.Windows.Forms.GroupBox();
             this.GridViewEnv = new System.Windows.Forms.DataGridView();
             this.grpBoxResult = new System.Windows.Forms.GroupBox();
@@ -44,9 +43,13 @@
             this.GridView55 = new System.Windows.Forms.DataGridView();
             this.grpBox56 = new System.Windows.Forms.GroupBox();
             this.GridView56 = new System.Windows.Forms.DataGridView();
-            this.lblAutoUpload = new System.Windows.Forms.Label();
             this.grpBox51 = new System.Windows.Forms.GroupBox();
             this.GridView51 = new System.Windows.Forms.DataGridView();
+            this.txtBoxManualUpload = new System.Windows.Forms.TextBox();
+            this.txtBoxAutoUpload = new System.Windows.Forms.TextBox();
+            this.tblLayoutMain = new System.Windows.Forms.TableLayoutPanel();
+            this.tblLayoutBottom = new System.Windows.Forms.TableLayoutPanel();
+            this.tblLayoutTop = new System.Windows.Forms.TableLayoutPanel();
             this.grpBoxInfo.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.GridViewInfo)).BeginInit();
             this.grpBoxEnv.SuspendLayout();
@@ -67,14 +70,18 @@
             ((System.ComponentModel.ISupportInitialize)(this.GridView56)).BeginInit();
             this.grpBox51.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.GridView51)).BeginInit();
+            this.tblLayoutMain.SuspendLayout();
+            this.tblLayoutBottom.SuspendLayout();
+            this.tblLayoutTop.SuspendLayout();
             this.SuspendLayout();
             // 
             // grpBoxInfo
             // 
             this.grpBoxInfo.Controls.Add(this.GridViewInfo);
-            this.grpBoxInfo.Location = new System.Drawing.Point(12, 42);
+            this.grpBoxInfo.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.grpBoxInfo.Location = new System.Drawing.Point(3, 3);
             this.grpBoxInfo.Name = "grpBoxInfo";
-            this.grpBoxInfo.Size = new System.Drawing.Size(200, 100);
+            this.grpBoxInfo.Size = new System.Drawing.Size(203, 104);
             this.grpBoxInfo.TabIndex = 4;
             this.grpBoxInfo.TabStop = false;
             this.grpBoxInfo.Text = "车辆信息";
@@ -92,14 +99,15 @@
             this.GridViewInfo.ReadOnly = true;
             this.GridViewInfo.RowHeadersVisible = false;
             this.GridViewInfo.RowTemplate.Height = 23;
-            this.GridViewInfo.Size = new System.Drawing.Size(194, 80);
+            this.GridViewInfo.Size = new System.Drawing.Size(197, 84);
             this.GridViewInfo.TabIndex = 0;
             // 
             // btnUpload
             // 
-            this.btnUpload.Location = new System.Drawing.Point(12, 12);
+            this.btnUpload.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnUpload.Location = new System.Drawing.Point(3, 3);
             this.btnUpload.Name = "btnUpload";
-            this.btnUpload.Size = new System.Drawing.Size(75, 23);
+            this.btnUpload.Size = new System.Drawing.Size(69, 23);
             this.btnUpload.TabIndex = 1;
             this.btnUpload.Text = "手动上传";
             this.btnUpload.UseVisualStyleBackColor = true;
@@ -107,27 +115,20 @@
             // 
             // txtBoxVIN
             // 
-            this.txtBoxVIN.Location = new System.Drawing.Point(93, 13);
+            this.txtBoxVIN.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.txtBoxVIN.Location = new System.Drawing.Point(78, 3);
             this.txtBoxVIN.Name = "txtBoxVIN";
-            this.txtBoxVIN.Size = new System.Drawing.Size(150, 21);
+            this.txtBoxVIN.Size = new System.Drawing.Size(144, 21);
             this.txtBoxVIN.TabIndex = 0;
             this.txtBoxVIN.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.TxtBoxVIN_KeyPress);
-            // 
-            // lblManualUpload
-            // 
-            this.lblManualUpload.AutoSize = true;
-            this.lblManualUpload.Location = new System.Drawing.Point(249, 18);
-            this.lblManualUpload.Name = "lblManualUpload";
-            this.lblManualUpload.Size = new System.Drawing.Size(77, 12);
-            this.lblManualUpload.TabIndex = 2;
-            this.lblManualUpload.Text = "手动上传就绪";
             // 
             // grpBoxEnv
             // 
             this.grpBoxEnv.Controls.Add(this.GridViewEnv);
-            this.grpBoxEnv.Location = new System.Drawing.Point(12, 149);
+            this.grpBoxEnv.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.grpBoxEnv.Location = new System.Drawing.Point(3, 113);
             this.grpBoxEnv.Name = "grpBoxEnv";
-            this.grpBoxEnv.Size = new System.Drawing.Size(200, 100);
+            this.grpBoxEnv.Size = new System.Drawing.Size(203, 104);
             this.grpBoxEnv.TabIndex = 5;
             this.grpBoxEnv.TabStop = false;
             this.grpBoxEnv.Text = "环境信息";
@@ -145,15 +146,16 @@
             this.GridViewEnv.ReadOnly = true;
             this.GridViewEnv.RowHeadersVisible = false;
             this.GridViewEnv.RowTemplate.Height = 23;
-            this.GridViewEnv.Size = new System.Drawing.Size(194, 80);
+            this.GridViewEnv.Size = new System.Drawing.Size(197, 84);
             this.GridViewEnv.TabIndex = 0;
             // 
             // grpBoxResult
             // 
             this.grpBoxResult.Controls.Add(this.GridViewResult);
-            this.grpBoxResult.Location = new System.Drawing.Point(12, 255);
+            this.grpBoxResult.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.grpBoxResult.Location = new System.Drawing.Point(3, 223);
             this.grpBoxResult.Name = "grpBoxResult";
-            this.grpBoxResult.Size = new System.Drawing.Size(200, 100);
+            this.grpBoxResult.Size = new System.Drawing.Size(203, 104);
             this.grpBoxResult.TabIndex = 6;
             this.grpBoxResult.TabStop = false;
             this.grpBoxResult.Text = "检测结果";
@@ -171,15 +173,16 @@
             this.GridViewResult.ReadOnly = true;
             this.GridViewResult.RowHeadersVisible = false;
             this.GridViewResult.RowTemplate.Height = 23;
-            this.GridViewResult.Size = new System.Drawing.Size(194, 80);
+            this.GridViewResult.Size = new System.Drawing.Size(197, 84);
             this.GridViewResult.TabIndex = 0;
             // 
             // grpBoxDevice
             // 
             this.grpBoxDevice.Controls.Add(this.GridViewDevice);
-            this.grpBoxDevice.Location = new System.Drawing.Point(12, 361);
+            this.grpBoxDevice.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.grpBoxDevice.Location = new System.Drawing.Point(3, 333);
             this.grpBoxDevice.Name = "grpBoxDevice";
-            this.grpBoxDevice.Size = new System.Drawing.Size(200, 100);
+            this.grpBoxDevice.Size = new System.Drawing.Size(203, 104);
             this.grpBoxDevice.TabIndex = 7;
             this.grpBoxDevice.TabStop = false;
             this.grpBoxDevice.Text = "检测设备";
@@ -197,15 +200,17 @@
             this.GridViewDevice.ReadOnly = true;
             this.GridViewDevice.RowHeadersVisible = false;
             this.GridViewDevice.RowTemplate.Height = 23;
-            this.GridViewDevice.Size = new System.Drawing.Size(194, 80);
+            this.GridViewDevice.Size = new System.Drawing.Size(197, 84);
             this.GridViewDevice.TabIndex = 0;
             // 
             // grpBox52
             // 
             this.grpBox52.Controls.Add(this.GridView52);
-            this.grpBox52.Location = new System.Drawing.Point(219, 255);
+            this.grpBox52.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.grpBox52.Location = new System.Drawing.Point(212, 223);
             this.grpBox52.Name = "grpBox52";
-            this.grpBox52.Size = new System.Drawing.Size(200, 206);
+            this.tblLayoutBottom.SetRowSpan(this.grpBox52, 2);
+            this.grpBox52.Size = new System.Drawing.Size(203, 214);
             this.grpBox52.TabIndex = 9;
             this.grpBox52.TabStop = false;
             this.grpBox52.Text = "2 - 稳态工况法";
@@ -223,15 +228,17 @@
             this.GridView52.ReadOnly = true;
             this.GridView52.RowHeadersVisible = false;
             this.GridView52.RowTemplate.Height = 23;
-            this.GridView52.Size = new System.Drawing.Size(194, 186);
+            this.GridView52.Size = new System.Drawing.Size(197, 194);
             this.GridView52.TabIndex = 0;
             // 
             // grpBox53
             // 
             this.grpBox53.Controls.Add(this.GridView53);
-            this.grpBox53.Location = new System.Drawing.Point(425, 42);
+            this.grpBox53.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.grpBox53.Location = new System.Drawing.Point(421, 3);
             this.grpBox53.Name = "grpBox53";
-            this.grpBox53.Size = new System.Drawing.Size(200, 207);
+            this.tblLayoutBottom.SetRowSpan(this.grpBox53, 2);
+            this.grpBox53.Size = new System.Drawing.Size(203, 214);
             this.grpBox53.TabIndex = 10;
             this.grpBox53.TabStop = false;
             this.grpBox53.Text = "3 - 简易瞬态工况法";
@@ -249,15 +256,17 @@
             this.GridView53.ReadOnly = true;
             this.GridView53.RowHeadersVisible = false;
             this.GridView53.RowTemplate.Height = 23;
-            this.GridView53.Size = new System.Drawing.Size(194, 187);
+            this.GridView53.Size = new System.Drawing.Size(197, 194);
             this.GridView53.TabIndex = 0;
             // 
             // grpBox54
             // 
             this.grpBox54.Controls.Add(this.GridView54);
-            this.grpBox54.Location = new System.Drawing.Point(426, 255);
+            this.grpBox54.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.grpBox54.Location = new System.Drawing.Point(421, 223);
             this.grpBox54.Name = "grpBox54";
-            this.grpBox54.Size = new System.Drawing.Size(200, 206);
+            this.tblLayoutBottom.SetRowSpan(this.grpBox54, 2);
+            this.grpBox54.Size = new System.Drawing.Size(203, 214);
             this.grpBox54.TabIndex = 11;
             this.grpBox54.TabStop = false;
             this.grpBox54.Text = "4 - 加载减速法";
@@ -275,15 +284,17 @@
             this.GridView54.ReadOnly = true;
             this.GridView54.RowHeadersVisible = false;
             this.GridView54.RowTemplate.Height = 23;
-            this.GridView54.Size = new System.Drawing.Size(194, 186);
+            this.GridView54.Size = new System.Drawing.Size(197, 194);
             this.GridView54.TabIndex = 0;
             // 
             // grpBox55
             // 
             this.grpBox55.Controls.Add(this.GridView55);
-            this.grpBox55.Location = new System.Drawing.Point(631, 42);
+            this.grpBox55.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.grpBox55.Location = new System.Drawing.Point(630, 3);
             this.grpBox55.Name = "grpBox55";
-            this.grpBox55.Size = new System.Drawing.Size(200, 207);
+            this.tblLayoutBottom.SetRowSpan(this.grpBox55, 2);
+            this.grpBox55.Size = new System.Drawing.Size(205, 214);
             this.grpBox55.TabIndex = 12;
             this.grpBox55.TabStop = false;
             this.grpBox55.Text = "6 - 自由加速法";
@@ -301,15 +312,17 @@
             this.GridView55.ReadOnly = true;
             this.GridView55.RowHeadersVisible = false;
             this.GridView55.RowTemplate.Height = 23;
-            this.GridView55.Size = new System.Drawing.Size(194, 187);
+            this.GridView55.Size = new System.Drawing.Size(199, 194);
             this.GridView55.TabIndex = 0;
             // 
             // grpBox56
             // 
             this.grpBox56.Controls.Add(this.GridView56);
-            this.grpBox56.Location = new System.Drawing.Point(631, 255);
+            this.grpBox56.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.grpBox56.Location = new System.Drawing.Point(630, 223);
             this.grpBox56.Name = "grpBox56";
-            this.grpBox56.Size = new System.Drawing.Size(200, 206);
+            this.tblLayoutBottom.SetRowSpan(this.grpBox56, 2);
+            this.grpBox56.Size = new System.Drawing.Size(205, 214);
             this.grpBox56.TabIndex = 13;
             this.grpBox56.TabStop = false;
             this.grpBox56.Text = "8 - 瞬态工况法";
@@ -327,24 +340,17 @@
             this.GridView56.ReadOnly = true;
             this.GridView56.RowHeadersVisible = false;
             this.GridView56.RowTemplate.Height = 23;
-            this.GridView56.Size = new System.Drawing.Size(194, 186);
+            this.GridView56.Size = new System.Drawing.Size(199, 194);
             this.GridView56.TabIndex = 0;
-            // 
-            // lblAutoUpload
-            // 
-            this.lblAutoUpload.AutoSize = true;
-            this.lblAutoUpload.Location = new System.Drawing.Point(543, 18);
-            this.lblAutoUpload.Name = "lblAutoUpload";
-            this.lblAutoUpload.Size = new System.Drawing.Size(77, 12);
-            this.lblAutoUpload.TabIndex = 3;
-            this.lblAutoUpload.Text = "自动上传就绪";
             // 
             // grpBox51
             // 
             this.grpBox51.Controls.Add(this.GridView51);
-            this.grpBox51.Location = new System.Drawing.Point(219, 42);
+            this.grpBox51.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.grpBox51.Location = new System.Drawing.Point(212, 3);
             this.grpBox51.Name = "grpBox51";
-            this.grpBox51.Size = new System.Drawing.Size(200, 207);
+            this.tblLayoutBottom.SetRowSpan(this.grpBox51, 2);
+            this.grpBox51.Size = new System.Drawing.Size(203, 214);
             this.grpBox51.TabIndex = 8;
             this.grpBox51.TabStop = false;
             this.grpBox51.Text = "1 - 双怠速法";
@@ -362,32 +368,102 @@
             this.GridView51.ReadOnly = true;
             this.GridView51.RowHeadersVisible = false;
             this.GridView51.RowTemplate.Height = 23;
-            this.GridView51.Size = new System.Drawing.Size(194, 187);
+            this.GridView51.Size = new System.Drawing.Size(197, 194);
             this.GridView51.TabIndex = 0;
+            // 
+            // txtBoxManualUpload
+            // 
+            this.txtBoxManualUpload.BackColor = System.Drawing.SystemColors.Control;
+            this.txtBoxManualUpload.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.txtBoxManualUpload.Location = new System.Drawing.Point(228, 3);
+            this.txtBoxManualUpload.Name = "txtBoxManualUpload";
+            this.txtBoxManualUpload.ReadOnly = true;
+            this.txtBoxManualUpload.Size = new System.Drawing.Size(300, 21);
+            this.txtBoxManualUpload.TabIndex = 14;
+            this.txtBoxManualUpload.Text = "手动上传就绪";
+            // 
+            // txtBoxAutoUpload
+            // 
+            this.txtBoxAutoUpload.BackColor = System.Drawing.SystemColors.Control;
+            this.txtBoxAutoUpload.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.txtBoxAutoUpload.Location = new System.Drawing.Point(534, 3);
+            this.txtBoxAutoUpload.Name = "txtBoxAutoUpload";
+            this.txtBoxAutoUpload.ReadOnly = true;
+            this.txtBoxAutoUpload.Size = new System.Drawing.Size(301, 21);
+            this.txtBoxAutoUpload.TabIndex = 15;
+            this.txtBoxAutoUpload.Text = "自动上传就绪";
+            // 
+            // tblLayoutMain
+            // 
+            this.tblLayoutMain.ColumnCount = 1;
+            this.tblLayoutMain.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tblLayoutMain.Controls.Add(this.tblLayoutBottom, 0, 1);
+            this.tblLayoutMain.Controls.Add(this.tblLayoutTop, 0, 0);
+            this.tblLayoutMain.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tblLayoutMain.Location = new System.Drawing.Point(0, 0);
+            this.tblLayoutMain.Name = "tblLayoutMain";
+            this.tblLayoutMain.RowCount = 2;
+            this.tblLayoutMain.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 35F));
+            this.tblLayoutMain.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tblLayoutMain.Size = new System.Drawing.Size(844, 481);
+            this.tblLayoutMain.TabIndex = 16;
+            // 
+            // tblLayoutBottom
+            // 
+            this.tblLayoutBottom.ColumnCount = 4;
+            this.tblLayoutBottom.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 25F));
+            this.tblLayoutBottom.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 25F));
+            this.tblLayoutBottom.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 25F));
+            this.tblLayoutBottom.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 25F));
+            this.tblLayoutBottom.Controls.Add(this.grpBoxInfo, 0, 0);
+            this.tblLayoutBottom.Controls.Add(this.grpBoxEnv, 0, 1);
+            this.tblLayoutBottom.Controls.Add(this.grpBoxResult, 0, 2);
+            this.tblLayoutBottom.Controls.Add(this.grpBox56, 3, 2);
+            this.tblLayoutBottom.Controls.Add(this.grpBoxDevice, 0, 3);
+            this.tblLayoutBottom.Controls.Add(this.grpBox54, 2, 2);
+            this.tblLayoutBottom.Controls.Add(this.grpBox55, 3, 0);
+            this.tblLayoutBottom.Controls.Add(this.grpBox51, 1, 0);
+            this.tblLayoutBottom.Controls.Add(this.grpBox52, 1, 2);
+            this.tblLayoutBottom.Controls.Add(this.grpBox53, 2, 0);
+            this.tblLayoutBottom.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tblLayoutBottom.Location = new System.Drawing.Point(3, 38);
+            this.tblLayoutBottom.Name = "tblLayoutBottom";
+            this.tblLayoutBottom.RowCount = 4;
+            this.tblLayoutBottom.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25F));
+            this.tblLayoutBottom.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25F));
+            this.tblLayoutBottom.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25F));
+            this.tblLayoutBottom.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25F));
+            this.tblLayoutBottom.Size = new System.Drawing.Size(838, 440);
+            this.tblLayoutBottom.TabIndex = 0;
+            // 
+            // tblLayoutTop
+            // 
+            this.tblLayoutTop.ColumnCount = 4;
+            this.tblLayoutTop.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 75F));
+            this.tblLayoutTop.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 150F));
+            this.tblLayoutTop.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.tblLayoutTop.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.tblLayoutTop.Controls.Add(this.btnUpload, 0, 0);
+            this.tblLayoutTop.Controls.Add(this.txtBoxAutoUpload, 3, 0);
+            this.tblLayoutTop.Controls.Add(this.txtBoxVIN, 1, 0);
+            this.tblLayoutTop.Controls.Add(this.txtBoxManualUpload, 2, 0);
+            this.tblLayoutTop.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tblLayoutTop.Location = new System.Drawing.Point(3, 3);
+            this.tblLayoutTop.Name = "tblLayoutTop";
+            this.tblLayoutTop.RowCount = 1;
+            this.tblLayoutTop.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.tblLayoutTop.Size = new System.Drawing.Size(838, 29);
+            this.tblLayoutTop.TabIndex = 1;
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(844, 481);
-            this.Controls.Add(this.lblAutoUpload);
-            this.Controls.Add(this.grpBox56);
-            this.Controls.Add(this.grpBox55);
-            this.Controls.Add(this.grpBox54);
-            this.Controls.Add(this.grpBox53);
-            this.Controls.Add(this.grpBox52);
-            this.Controls.Add(this.grpBox51);
-            this.Controls.Add(this.grpBoxDevice);
-            this.Controls.Add(this.grpBoxResult);
-            this.Controls.Add(this.grpBoxEnv);
-            this.Controls.Add(this.lblManualUpload);
-            this.Controls.Add(this.txtBoxVIN);
-            this.Controls.Add(this.btnUpload);
-            this.Controls.Add(this.grpBoxInfo);
+            this.Controls.Add(this.tblLayoutMain);
             this.Name = "MainForm";
             this.Text = "ISUZU_Dyno_Upload";
             this.Load += new System.EventHandler(this.MainForm_Load);
-            this.Resize += new System.EventHandler(this.MainForm_Resize);
             this.grpBoxInfo.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.GridViewInfo)).EndInit();
             this.grpBoxEnv.ResumeLayout(false);
@@ -408,8 +484,11 @@
             ((System.ComponentModel.ISupportInitialize)(this.GridView56)).EndInit();
             this.grpBox51.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.GridView51)).EndInit();
+            this.tblLayoutMain.ResumeLayout(false);
+            this.tblLayoutBottom.ResumeLayout(false);
+            this.tblLayoutTop.ResumeLayout(false);
+            this.tblLayoutTop.PerformLayout();
             this.ResumeLayout(false);
-            this.PerformLayout();
 
         }
 
@@ -418,7 +497,6 @@
         private System.Windows.Forms.GroupBox grpBoxInfo;
         private System.Windows.Forms.Button btnUpload;
         private System.Windows.Forms.TextBox txtBoxVIN;
-        private System.Windows.Forms.Label lblManualUpload;
         private System.Windows.Forms.GroupBox grpBoxEnv;
         private System.Windows.Forms.GroupBox grpBoxResult;
         private System.Windows.Forms.GroupBox grpBoxDevice;
@@ -427,7 +505,6 @@
         private System.Windows.Forms.GroupBox grpBox54;
         private System.Windows.Forms.GroupBox grpBox55;
         private System.Windows.Forms.GroupBox grpBox56;
-        private System.Windows.Forms.Label lblAutoUpload;
         private System.Windows.Forms.DataGridView GridViewInfo;
         private System.Windows.Forms.DataGridView GridViewEnv;
         private System.Windows.Forms.DataGridView GridViewResult;
@@ -439,6 +516,11 @@
         private System.Windows.Forms.DataGridView GridView56;
         private System.Windows.Forms.GroupBox grpBox51;
         private System.Windows.Forms.DataGridView GridView51;
+        private System.Windows.Forms.TextBox txtBoxManualUpload;
+        private System.Windows.Forms.TextBox txtBoxAutoUpload;
+        private System.Windows.Forms.TableLayoutPanel tblLayoutBottom;
+        private System.Windows.Forms.TableLayoutPanel tblLayoutMain;
+        private System.Windows.Forms.TableLayoutPanel tblLayoutTop;
     }
 }
 

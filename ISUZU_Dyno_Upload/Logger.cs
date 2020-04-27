@@ -33,7 +33,7 @@ namespace ISUZU_Dyno_Upload {
             this.LogLevel = EnumLogLevel.LogLevelNormal;
             this.IsTraceLineNum = true;
             this.ObjLock = new object();
-            this.StrLogPath = ".\\log";
+            this.StrLogPath = ".\\log\\" + catalog;
             this.MaxFileQty = 0;
             FileQueue = new Queue<string>();
             GenFileQueue();

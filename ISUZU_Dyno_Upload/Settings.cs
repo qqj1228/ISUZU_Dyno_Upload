@@ -4,6 +4,12 @@ using System.Linq;
 using System.Text;
 
 namespace ISUZU_Dyno_Upload {
+    public enum OracleDB {
+        Auto,
+        MES,
+        Dyno,
+    }
+
     [Serializable]
     public class OracleMES {
         public string Host { get; set; }
@@ -13,6 +19,7 @@ namespace ISUZU_Dyno_Upload {
         public string PassWord { get; set; }
 
         public OracleMES() {
+            // 此默认值是MES中间表默认参数
             Host = "10.50.252.106";
             Port = "1561";
             ServiceName = "IUAT2";
@@ -44,6 +51,7 @@ namespace ISUZU_Dyno_Upload {
     public class DBSetting {
         public OracleMES Oracle { get; set; }
         public SqlServerNative SqlServer { get; set; }
+        public OracleMES Dyno { get; set; }
         public int Interval { get; set; }
         public string Name { get; set; }
         public int LastID { get; set; }
@@ -51,6 +59,7 @@ namespace ISUZU_Dyno_Upload {
         public DBSetting() {
             Oracle = new OracleMES();
             SqlServer = new SqlServerNative();
+            Dyno = new OracleMES();
             Interval = 5;
             Name = "Emission";
             LastID = 0;

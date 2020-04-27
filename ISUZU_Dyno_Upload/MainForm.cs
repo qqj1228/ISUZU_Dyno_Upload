@@ -30,7 +30,7 @@ namespace ISUZU_Dyno_Upload {
         public DataTable m_dt54;
         public DataTable m_dt55;
         public DataTable m_dt56;
-
+        public Color m_ctrlColor;
 
         public MainForm() {
             InitializeComponent();
@@ -40,7 +40,7 @@ namespace ISUZU_Dyno_Upload {
             m_log.TraceInfo("==================== START Ver: " + MainFileVersion.AssemblyVersion + " ====================");
             m_cfg = new Config(m_log);
             m_db = new Model(m_cfg.DB.Data.SqlServer, m_log);
-            m_dbOracle = new ModelOracle(m_cfg.DB.Data.Oracle, m_log);
+            m_dbOracle = new ModelOracle(m_cfg.DB.Data.Oracle, m_cfg.DB.Data.Dyno, m_log);
             m_iCNLenb = 3;
             try {
                 m_iCNLenb = m_dbOracle.GetCNLenb();
@@ -67,47 +67,6 @@ namespace ISUZU_Dyno_Upload {
         private void StartDynoServer() {
             m_logTCP = new Logger("DynoServer", ".\\log", EnumLogLevel.LogLevelAll, true, 100);
             m_dynoServer = new TCPImplement(m_cfg.DynoParam.Data, m_cfg.DynoSimData.Data, m_dbOracle, m_logTCP);
-        }
-
-        private void MainForm_Resize(object sender, EventArgs e) {
-            int padding = this.btnUpload.Location.X;
-            int margin = this.grpBox51.Location.X - (this.grpBoxInfo.Location.X + this.grpBoxInfo.Width);
-
-            this.lblAutoUpload.Location = new Point((this.ClientSize.Width + this.txtBoxVIN.Location.X + this.txtBoxVIN.Width) / 2, this.lblManualUpload.Location.Y);
-
-            this.grpBoxInfo.Width = (this.ClientSize.Width - padding * 2 - margin * 3) / 4;
-            this.grpBoxInfo.Height = (this.ClientSize.Height - this.grpBoxInfo.Location.Y - padding - margin * 3) / 4;
-            this.grpBoxEnv.Location = new Point(this.grpBoxInfo.Location.X, this.grpBoxInfo.Height + this.grpBoxInfo.Location.Y + margin);
-            this.grpBoxEnv.Width = this.grpBoxInfo.Width;
-            this.grpBoxEnv.Height = this.grpBoxInfo.Height;
-            this.grpBoxResult.Location = new Point(this.grpBoxInfo.Location.X, this.grpBoxEnv.Height + this.grpBoxEnv.Location.Y + margin);
-            this.grpBoxResult.Width = this.grpBoxInfo.Width;
-            this.grpBoxResult.Height = this.grpBoxInfo.Height;
-            this.grpBoxDevice.Location = new Point(this.grpBoxInfo.Location.X, this.grpBoxResult.Height + this.grpBoxResult.Location.Y + margin);
-            this.grpBoxDevice.Width = this.grpBoxInfo.Width;
-            this.grpBoxDevice.Height = this.grpBoxInfo.Height;
-
-            this.grpBox51.Location = new Point(this.grpBoxInfo.Location.X + this.grpBoxInfo.Width + margin, this.grpBoxInfo.Location.Y);
-            this.grpBox51.Width = this.grpBoxInfo.Width;
-            this.grpBox51.Height = (this.ClientSize.Height - this.grpBoxInfo.Location.Y - padding - margin) / 2;
-            this.grpBox52.Location = new Point(this.grpBox51.Location.X, this.grpBox51.Location.Y + this.grpBox51.Height + margin);
-            this.grpBox52.Width = this.grpBox51.Width;
-            this.grpBox52.Height = this.grpBox51.Height;
-
-            this.grpBox53.Location = new Point(this.grpBox51.Location.X + this.grpBox51.Width + margin, this.grpBoxInfo.Location.Y);
-            this.grpBox53.Width = this.grpBox51.Width;
-            this.grpBox53.Height = this.grpBox51.Height;
-            this.grpBox54.Location = new Point(this.grpBox53.Location.X, this.grpBox53.Location.Y + this.grpBox53.Height + margin);
-            this.grpBox54.Width = this.grpBox51.Width;
-            this.grpBox54.Height = this.grpBox51.Height;
-
-            this.grpBox55.Location = new Point(this.grpBox53.Location.X + this.grpBox53.Width + margin, this.grpBoxInfo.Location.Y);
-            this.grpBox55.Width = this.grpBox51.Width;
-            this.grpBox55.Height = this.grpBox51.Height;
-            this.grpBox56.Location = new Point(this.grpBox55.Location.X, this.grpBox55.Location.Y + this.grpBox55.Height + margin);
-            this.grpBox56.Width = this.grpBox51.Width;
-            this.grpBox56.Height = this.grpBox51.Height;
-
         }
 
         private bool Upload(UploadField result, out string errorMsg) {
@@ -179,16 +138,16 @@ namespace ISUZU_Dyno_Upload {
             foreach (UploadField result in resultList) {
                 if (Upload(result, out string errorMsg)) {
                     this.Invoke((EventHandler)delegate {
-                        this.lblAutoUpload.ForeColor = Color.ForestGreen;
-                        this.lblAutoUpload.Text = "VIN[" + result.VIN + "] 数据已自动上传";
+                        this.txtBoxAutoUpload.BackColor = Color.LightGreen;
+                        this.txtBoxAutoUpload.Text = "VIN[" + result.VIN + "] 数据已自动上传";
                     });
                 } else {
                     if (errorMsg.Contains("Exception|")) {
                         MessageBox.Show(errorMsg.Split('|')[1], "上传出错", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     } else {
                         this.Invoke((EventHandler)delegate {
-                            this.lblAutoUpload.ForeColor = Color.Red;
-                            this.lblAutoUpload.Text = "VIN[" + result.VIN + "] " + errorMsg;
+                            this.txtBoxAutoUpload.BackColor = Color.OrangeRed;
+                            this.txtBoxAutoUpload.Text = "VIN[" + result.VIN + "] " + errorMsg;
                         });
                     }
                 }
@@ -698,22 +657,22 @@ namespace ISUZU_Dyno_Upload {
             }
             if (result == null) {
                 this.Invoke((EventHandler)delegate {
-                    this.lblManualUpload.ForeColor = Color.Red;
-                    this.lblManualUpload.Text = "VIN[" + result.VIN + "] 获取排放数据失败";
+                    this.txtBoxManualUpload.BackColor = Color.OrangeRed;
+                    this.txtBoxManualUpload.Text = "VIN[" + result.VIN + "] 获取排放数据失败";
                 });
             } else {
                 if (Upload(result, out string errorMsg)) {
                     this.Invoke((EventHandler)delegate {
-                        this.lblManualUpload.ForeColor = Color.ForestGreen;
-                        this.lblManualUpload.Text = "VIN[" + result.VIN + "] 数据已手动上传";
+                        this.txtBoxManualUpload.BackColor = Color.LightGreen;
+                        this.txtBoxManualUpload.Text = "VIN[" + result.VIN + "] 数据已手动上传";
                     });
                 } else {
                     if (errorMsg.Contains("Exception|")) {
                         MessageBox.Show(errorMsg.Split('|')[1], "上传出错", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     } else {
                         this.Invoke((EventHandler)delegate {
-                            this.lblManualUpload.ForeColor = Color.Red;
-                            this.lblManualUpload.Text = "VIN[" + result.VIN + "] " + errorMsg;
+                            this.txtBoxManualUpload.BackColor = Color.OrangeRed;
+                            this.txtBoxManualUpload.Text = "VIN[" + result.VIN + "] " + errorMsg;
                         });
                     }
                 }
@@ -731,12 +690,12 @@ namespace ISUZU_Dyno_Upload {
                         this.txtBoxVIN.Text = codes[0];
                     }
                     if (this.txtBoxVIN.Text.Length == 17) {
-                        this.lblManualUpload.ForeColor = Color.Black;
-                        this.lblManualUpload.Text = "手动上传就绪";
+                        this.txtBoxManualUpload.BackColor = m_ctrlColor;
+                        this.txtBoxManualUpload.Text = "手动上传就绪";
                         ShowData(this.txtBoxVIN.Text);
                         this.txtBoxVIN.SelectAll();
-                        this.lblManualUpload.ForeColor = Color.Black;
-                        this.lblManualUpload.Text = "数据显示完毕";
+                        this.txtBoxManualUpload.BackColor = m_ctrlColor;
+                        this.txtBoxManualUpload.Text = "数据显示完毕";
                     }
                 }
             }
@@ -793,6 +752,7 @@ namespace ISUZU_Dyno_Upload {
             m_dt56.Columns.Add("数值");
             this.GridView56.DataSource = m_dt56;
             SetGridViewColumnsSortMode(this.GridView56, DataGridViewColumnSortMode.Programmatic);
+            m_ctrlColor = this.txtBoxAutoUpload.BackColor;
         }
 
         private void BtnUpload_Click(object sender, EventArgs e) {

@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <DBSetting xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <!-- 上传MES中间表 -->
   <Oracle>
-    <Host>exd1-scan.jimc.cn</Host>
-    <Port>1521</Port>
-    <ServiceName>MPRD</ServiceName>
-    <UserID>mesdevice</UserID>
-    <PassWord>Device_31oct</PassWord>
+    <Host>10.50.252.106</Host>
+    <Port>1561</Port>
+    <ServiceName>IUAT2</ServiceName>
+    <UserID>idevice</UserID>
+    <PassWord>idevice</PassWord>
   </Oracle>
+  <!-- 测功机本地数据库 -->
   <SqlServer>
     <UserName>sa</UserName>
     <PassWord>sh49</PassWord>
@@ -14,6 +16,16 @@
     <IP>127.0.0.1</IP>
     <Port>1433</Port>
   </SqlServer>
+  <!-- 测功机参数中间表 -->
+  <Dyno>
+    <Host>exd1-scan.jimc.cn</Host>
+    <Port>1521</Port>
+    <ServiceName>MESPRD</ServiceName>
+    <UserID>mmes</UserID>
+    <PassWord>mmes</PassWord>
+  </Dyno>
+  <!-- 自动上传数据库的时间间隔，单位：分钟 -->
   <Interval>5</Interval>
+  <!-- 操作员姓名 -->
   <Name>Emission</Name>
 </DBSetting>
