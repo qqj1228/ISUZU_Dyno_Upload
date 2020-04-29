@@ -139,7 +139,7 @@ namespace ISUZU_Dyno_Upload {
                 if (Upload(result, out string errorMsg)) {
                     this.Invoke((EventHandler)delegate {
                         this.txtBoxAutoUpload.BackColor = Color.LightGreen;
-                        this.txtBoxAutoUpload.Text = "VIN[" + result.VIN + "] 数据已自动上传";
+                        this.txtBoxAutoUpload.Text = "VIN[" + result.VIN + "]数据已自动上传";
                     });
                 } else {
                     if (errorMsg.Contains("Exception|")) {
@@ -147,7 +147,7 @@ namespace ISUZU_Dyno_Upload {
                     } else {
                         this.Invoke((EventHandler)delegate {
                             this.txtBoxAutoUpload.BackColor = Color.OrangeRed;
-                            this.txtBoxAutoUpload.Text = "VIN[" + result.VIN + "] " + errorMsg;
+                            this.txtBoxAutoUpload.Text = "VIN[" + result.VIN + "]" + errorMsg;
                         });
                     }
                 }
@@ -562,12 +562,14 @@ namespace ISUZU_Dyno_Upload {
             }
         }
 
-        private void ShowData(string strVIN) {
+        private bool ShowData(string strVIN) {
             DataRow dr;
-            string JCLSH = "";
+            string JCLSH;
             Dictionary<string, string> result = m_db.GetJCLSH(strVIN);
-            if (result != null && result["检测流水号"] != null) {
+            if (result != null && result.ContainsKey("检测流水号") && result["检测流水号"] != null) {
                 JCLSH = result["检测流水号"];
+            } else {
+                return false;
             }
             m_dtInfo.Clear();
             foreach (string key in result.Keys) {
@@ -646,6 +648,7 @@ namespace ISUZU_Dyno_Upload {
                 }
                 break;
             }
+            return true;
         }
 
         private void ManualUpload() {
@@ -658,13 +661,13 @@ namespace ISUZU_Dyno_Upload {
             if (result == null) {
                 this.Invoke((EventHandler)delegate {
                     this.txtBoxManualUpload.BackColor = Color.OrangeRed;
-                    this.txtBoxManualUpload.Text = "VIN[" + result.VIN + "] 获取排放数据失败";
+                    this.txtBoxManualUpload.Text = "VIN[" + this.txtBoxVIN.Text + "]未获取到排放数据";
                 });
             } else {
                 if (Upload(result, out string errorMsg)) {
                     this.Invoke((EventHandler)delegate {
                         this.txtBoxManualUpload.BackColor = Color.LightGreen;
-                        this.txtBoxManualUpload.Text = "VIN[" + result.VIN + "] 数据已手动上传";
+                        this.txtBoxManualUpload.Text = "VIN[" + result.VIN + "]数据已手动上传";
                     });
                 } else {
                     if (errorMsg.Contains("Exception|")) {
@@ -672,7 +675,7 @@ namespace ISUZU_Dyno_Upload {
                     } else {
                         this.Invoke((EventHandler)delegate {
                             this.txtBoxManualUpload.BackColor = Color.OrangeRed;
-                            this.txtBoxManualUpload.Text = "VIN[" + result.VIN + "] " + errorMsg;
+                            this.txtBoxManualUpload.Text = "VIN[" + result.VIN + "]" + errorMsg;
                         });
                     }
                 }
@@ -692,10 +695,14 @@ namespace ISUZU_Dyno_Upload {
                     if (this.txtBoxVIN.Text.Length == 17) {
                         this.txtBoxManualUpload.BackColor = m_ctrlColor;
                         this.txtBoxManualUpload.Text = "手动上传就绪";
-                        ShowData(this.txtBoxVIN.Text);
+                        if (ShowData(this.txtBoxVIN.Text)) {
+                            this.txtBoxManualUpload.BackColor = m_ctrlColor;
+                            this.txtBoxManualUpload.Text = "数据显示完毕";
+                        } else {
+                            this.txtBoxManualUpload.BackColor = Color.OrangeRed;
+                            this.txtBoxManualUpload.Text = "VIN[" + this.txtBoxVIN.Text + "]未获取到排放数据";
+                        }
                         this.txtBoxVIN.SelectAll();
-                        this.txtBoxManualUpload.BackColor = m_ctrlColor;
-                        this.txtBoxManualUpload.Text = "数据显示完毕";
                     }
                 }
             }

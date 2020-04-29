@@ -576,7 +576,9 @@ namespace ISUZU_Dyno_Upload {
             Dictionary<string, string> ret = new Dictionary<string, string>();
             string[,] result = SelectDB(string.Format("select [JCLSH] from [已检车辆库] where [VIN] = '{0}'", strVIN));
             ret.Add("VIN号", strVIN);
-            ret.Add("检测流水号", result[0, 0]);
+            if (result.GetLength(0) > 0) {
+                ret.Add("检测流水号", result[0, 0]);
+            }
             return ret;
         }
 
