@@ -201,60 +201,116 @@ namespace ISUZU_Dyno_Upload {
             return iRet;
         }
 
-        public void GetEmissionInfo(string strVIN, EmissionInfo ei) {
-            string strSQL = "select * from IF_VEHICLEINFO1 where VIN = '" + strVIN + "'";
-            DataTable dt1 = new DataTable("IF_VehicleInfo1");
-            Query(strSQL, dt1, ConnectionDyno);
-            if (dt1.Rows.Count > 0) {
-                DataRow dr1 = dt1.Rows[dt1.Rows.Count - 1];
-                ei.VehicleInfo1.VIN = dr1["VIN"].ToString();
-                ei.VehicleInfo1.VehicleType = dr1["VEHICLETYPE"].ToString();
-                ei.VehicleInfo1.ISQZ = dr1["ISQZ"].ToString();
-                ei.VehicleInfo1.CLXH = dr1["CLXH"].ToString();
-                ei.VehicleInfo1.FDJXH = dr1["FDJXH"].ToString();
-                ei.VehicleInfo1.HasOBD = dr1["HASOBD"].ToString();
-                ei.VehicleInfo1.FuelType = dr1["FUELTYPE"].ToString();
-                ei.VehicleInfo1.Standard = dr1["STANDARD"].ToString();
+        private void USP_GET_ENVIRONMENT_DATA(string strVIN, DataTable dtOut, out string errMsg) {
+            using (OracleConnection connection = new OracleConnection(ConnectionDyno)) {
+                try {
+                    connection.Open();
+                    // 调用存储过程名
+                    OracleCommand cmd = new OracleCommand("USP_GET_ENVIRONMENT_DATA", connection);
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    // 添加存储过程参数
+                    OracleParameter IN_VIN = new OracleParameter {
+                        ParameterName = "IN_VIN",
+                        OracleDbType = OracleDbType.Varchar2,
+                        Direction = ParameterDirection.Input,
+                        Size = 17,
+                        Value = strVIN
+                    };
+                    cmd.Parameters.Add(IN_VIN);
+
+                    OracleParameter IN_MAKE_DATE = new OracleParameter {
+                        ParameterName = "IN_MAKE_DATE",
+                        OracleDbType = OracleDbType.Date,
+                        Direction = ParameterDirection.Input,
+                        Value = DateTime.Now
+                    };
+
+                    cmd.Parameters.Add(IN_MAKE_DATE);
+
+                    OracleParameter OUT_DATA_SET = new OracleParameter {
+                        ParameterName = "OUT_DATA_SET",
+                        OracleDbType = OracleDbType.RefCursor,
+                        Direction = ParameterDirection.Output
+                    };
+                    cmd.Parameters.Add(OUT_DATA_SET);
+
+                    OracleParameter ERROR_MESSAGE = new OracleParameter {
+                        ParameterName = "ERROR_MESSAGE",
+                        OracleDbType = OracleDbType.Varchar2,
+                        Direction = ParameterDirection.Output,
+                        Size = 1000
+                    };
+                    cmd.Parameters.Add(ERROR_MESSAGE);
+
+                    // 执行存储过程并封装游标输出结果
+                    OracleDataAdapter adapter = new OracleDataAdapter(cmd);
+                    adapter.Fill(dtOut);
+
+                    // 获取输出参数结果
+                    errMsg = cmd.Parameters["ERROR_MESSAGE"].Value.ToString();
+                } catch (OracleException ex) {
+                    m_log.TraceError("Error Stored Procedure: USP_GET_ENVIRONMENT_DATA");
+                    m_log.TraceError(ex.Message);
+                    throw new Exception(ex.Message);
+                } finally {
+                    if (connection.State != ConnectionState.Closed) {
+                        connection.Close();
+                    }
+                }
             }
-            strSQL = "select * from IF_VEHICLEINFO2 where VIN = '" + strVIN + "'";
-            DataTable dt2 = new DataTable("IF_VehicleInfo2");
-            Query(strSQL, dt2, ConnectionDyno);
-            if (dt2.Rows.Count > 0) {
-                DataRow dr2 = dt2.Rows[dt2.Rows.Count - 1];
-                ei.VehicleInfo2.VIN = dr2["VIN"].ToString();
-                ei.VehicleInfo2.VehicleKind = dr2["VEHICLEKIND"].ToString();
-                ei.VehicleInfo2.VehicleType = dr2["VEHICLETYPE"].ToString();
-                ei.VehicleInfo2.Model = dr2["MODEL"].ToString();
-                ei.VehicleInfo2.GearBoxType = dr2["GEARBOXTYPE"].ToString();
-                ei.VehicleInfo2.AdmissionMode = dr2["ADMISSIONMODE"].ToString();
-                ei.VehicleInfo2.Volume = dr2["VOLUME"].ToString();
-                ei.VehicleInfo2.FuelType = dr2["FUELTYPE"].ToString();
-                ei.VehicleInfo2.RatedRev = dr2["RATEDREV"].ToString();
-                ei.VehicleInfo2.RatedPower = dr2["RATEDPOWER"].ToString();
-                ei.VehicleInfo2.DriveMode = dr2["DRIVEMODE"].ToString();
-                ei.VehicleInfo2.MaxMass = dr2["MAXMASS"].ToString();
-                ei.VehicleInfo2.RefMass = dr2["REFMASS"].ToString();
-                ei.VehicleInfo2.HasODB = dr2["HASODB"].ToString();
-                ei.VehicleInfo2.HasPurge = dr2["HASPURGE"].ToString();
-                ei.VehicleInfo2.IsEFI = dr2["ISEFI"].ToString();
-                ei.VehicleInfo2.MaxLoad = dr2["MAXLOAD"].ToString();
-                ei.VehicleInfo2.CarOrTruck = dr2["CARORTRUCK"].ToString();
-                ei.VehicleInfo2.Cylinder = dr2["CYLINDER"].ToString();
-                ei.VehicleInfo2.IsTransform = dr2["ISTRANSFORM"].ToString();
-                ei.VehicleInfo2.StandardID = dr2["STANDARDID"].ToString();
-                ei.VehicleInfo2.IsAsm = dr2["ISASM"].ToString();
-                ei.VehicleInfo2.QCZZCJ = dr2["QCZZCJ"].ToString();
-                ei.VehicleInfo2.FDJZZC = dr2["FDJZZC"].ToString();
-                ei.VehicleInfo2.DDJXH = dr2["DDJXH"].ToString();
-                ei.VehicleInfo2.XNZZXH = dr2["XNZZXH"].ToString();
-                ei.VehicleInfo2.CHZHQXH = dr2["CHZHQXH"].ToString();
-                ei.VehicleInfo2.SCR = dr2["SCR"].ToString();
-                ei.VehicleInfo2.SCRXH = dr2["SCRXH"].ToString();
-                ei.VehicleInfo2.DPF = dr2["DPF"].ToString();
-                ei.VehicleInfo2.DPFXH = dr2["DPFXH"].ToString();
-                ei.VehicleInfo2.DCRL = dr2["DCRL"].ToString();
-                ei.VehicleInfo2.JCFF = dr2["JCFF"].ToString();
+        }
+
+        public void GetEmissionInfo(string strVIN, EmissionInfo ei, out string errMsg) {
+            DataTable dtDynoParam = new DataTable("DYNO_PARAM");
+            USP_GET_ENVIRONMENT_DATA(strVIN, dtDynoParam, out errMsg);
+            if (dtDynoParam.Rows.Count > 0) {
+                DataRow dr = dtDynoParam.Rows[dtDynoParam.Rows.Count - 1];
+                ei.VehicleInfo1.VIN = strVIN;
+                ei.VehicleInfo1.VehicleType = dr["VEHICLE_KIND_S"].ToString();
+                ei.VehicleInfo1.ISQZ = dr["CAR_OR_TRUCK_S"].ToString();
+                ei.VehicleInfo1.CLXH = dr["VEHICLE_MODEL_S"].ToString();
+                ei.VehicleInfo1.FDJXH = dr["FDJXH_S"].ToString();
+                ei.VehicleInfo1.HasOBD = dr["IS_OBD_S"].ToString();
+                ei.VehicleInfo1.FuelType = dr["FUEL_TYPE_S"].ToString();
+                ei.VehicleInfo1.Standard = dr["CLPFJD_S"].ToString();
+
+                ei.VehicleInfo2.VIN = strVIN;
+                ei.VehicleInfo2.VehicleKind = dr["VEHICLE_KIND_S"].ToString();
+                ei.VehicleInfo2.VehicleType = dr["VEHICLE_TYPE_S"].ToString();
+                ei.VehicleInfo2.Model = dr["FDJSB_S"].ToString();
+                ei.VehicleInfo2.GearBoxType = dr["BSQXSH_S"].ToString();
+                ei.VehicleInfo2.AdmissionMode = dr["AIR_INLET_S"].ToString();
+                ei.VehicleInfo2.Volume = dr["FDJPL_S"].ToString();
+                ei.VehicleInfo2.FuelType = dr["FUEL_TYPE_S"].ToString();
+                ei.VehicleInfo2.SupplyMode = dr["RYGJSYS_S"].ToString();
+                ei.VehicleInfo2.RatedRev = dr["EDZHS_S"].ToString();
+                ei.VehicleInfo2.RatedPower = dr["FDJEDGL_S"].ToString();
+                ei.VehicleInfo2.DriveMode = dr["DRIVE_MODE_S"].ToString();
+                ei.VehicleInfo2.MaxMass = dr["MAXSJZZHL_S"].ToString();
+                ei.VehicleInfo2.RefMass = dr["JZHZHL_S"].ToString();
+                ei.VehicleInfo2.HasODB = dr["IS_OBD_S"].ToString();
+                ei.VehicleInfo2.HasPurge = dr["IS_PURGE_S"].ToString();
+                ei.VehicleInfo2.IsEFI = dr["IS_EFI_S"].ToString();
+                ei.VehicleInfo2.MaxLoad = dr["NUM_OR_WEIGHT_S"].ToString();
+                ei.VehicleInfo2.CarOrTruck = dr["CAR_OR_TRUCK_S"].ToString();
+                ei.VehicleInfo2.Cylinder = dr["QGS_S"].ToString();
+                ei.VehicleInfo2.IsTransform = dr["IS_TRANSFORM_S"].ToString();
+                ei.VehicleInfo2.StandardID = dr["CLPFJD_S"].ToString();
+                ei.VehicleInfo2.IsAsm = dr["IS_ASM_S"].ToString();
+                ei.VehicleInfo2.QCZZCJ = dr["SCCMC_S"].ToString();
+                ei.VehicleInfo2.FDJZZC = dr["FDJSCQY_S"].ToString();
+                ei.VehicleInfo2.DDJXH = dr["DDJXH_S"].ToString();
+                ei.VehicleInfo2.XNZZXH = dr["CHNZHZHXH_S"].ToString();
+                ei.VehicleInfo2.CHZHQXH = dr["CHZHHQXH_S"].ToString();
+                ei.VehicleInfo2.SCR = dr["SCR_S"].ToString();
+                ei.VehicleInfo2.SCRXH = dr["SCRXH_S"].ToString();
+                ei.VehicleInfo2.DPF = dr["DPF_S"].ToString();
+                ei.VehicleInfo2.DPFXH = dr["DPFXH_S"].ToString();
+                ei.VehicleInfo2.DCRL = dr["DCHRL_S"].ToString();
+                ei.VehicleInfo2.JCFF = dr["JCFF_S"].ToString();
             }
+
         }
     }
 }

@@ -30,7 +30,8 @@ namespace ISUZU_Dyno_Upload {
         public DataTable m_dt54;
         public DataTable m_dt55;
         public DataTable m_dt56;
-        public Color m_ctrlColor;
+        public Color m_backColor;
+        public Color m_foreColor;
 
         public MainForm() {
             InitializeComponent();
@@ -42,12 +43,14 @@ namespace ISUZU_Dyno_Upload {
             m_db = new Model(m_cfg.DB.Data.SqlServer, m_log);
             m_dbOracle = new ModelOracle(m_cfg.DB.Data.Oracle, m_cfg.DB.Data.Dyno, m_log);
             m_iCNLenb = 3;
-            try {
-                m_iCNLenb = m_dbOracle.GetCNLenb();
-            } catch (Exception ex) {
-                m_log.TraceError("Can't connect with MES: " + ex.Message);
-                MessageBox.Show("无法与MES通讯，请检查设置\n" + ex.Message, "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+            Task.Factory.StartNew(new Action(() => {
+                try {
+                    m_iCNLenb = m_dbOracle.GetCNLenb();
+                } catch (Exception ex) {
+                    m_log.TraceError("Can't connect with MES: " + ex.Message);
+                    MessageBox.Show("无法与MES通讯，请检查设置\n" + ex.Message, "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }));
 #if DEBUG
             m_timer = new System.Timers.Timer(m_cfg.DB.Data.Interval * 1000);
             m_timer.Elapsed += new System.Timers.ElapsedEventHandler(OnTimeUpload);
@@ -66,7 +69,7 @@ namespace ISUZU_Dyno_Upload {
 
         private void StartDynoServer() {
             m_logTCP = new Logger("DynoServer", ".\\log", EnumLogLevel.LogLevelAll, true, 100);
-            m_dynoServer = new TCPImplement(m_cfg.DynoParam.Data, m_cfg.DynoSimData.Data, m_dbOracle, m_logTCP);
+            m_dynoServer = new TCPImplement(this, this.txtBoxDynoParam, m_cfg.DynoParam.Data, m_cfg.DynoSimData.Data, m_dbOracle, m_logTCP);
         }
 
         private bool Upload(UploadField result, out string errorMsg) {
@@ -139,6 +142,7 @@ namespace ISUZU_Dyno_Upload {
                 if (Upload(result, out string errorMsg)) {
                     this.Invoke((EventHandler)delegate {
                         this.txtBoxAutoUpload.BackColor = Color.LightGreen;
+                        this.txtBoxAutoUpload.ForeColor = m_foreColor;
                         this.txtBoxAutoUpload.Text = "VIN[" + result.VIN + "]数据已自动上传";
                     });
                 } else {
@@ -146,7 +150,8 @@ namespace ISUZU_Dyno_Upload {
                         MessageBox.Show(errorMsg.Split('|')[1], "上传出错", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     } else {
                         this.Invoke((EventHandler)delegate {
-                            this.txtBoxAutoUpload.BackColor = Color.OrangeRed;
+                            this.txtBoxAutoUpload.BackColor = Color.Red;
+                            this.txtBoxAutoUpload.ForeColor = Color.White;
                             this.txtBoxAutoUpload.Text = "VIN[" + result.VIN + "]" + errorMsg;
                         });
                     }
@@ -660,13 +665,15 @@ namespace ISUZU_Dyno_Upload {
             }
             if (result == null) {
                 this.Invoke((EventHandler)delegate {
-                    this.txtBoxManualUpload.BackColor = Color.OrangeRed;
+                    this.txtBoxManualUpload.BackColor = Color.Red;
+                    this.txtBoxManualUpload.ForeColor = Color.White;
                     this.txtBoxManualUpload.Text = "VIN[" + this.txtBoxVIN.Text + "]未获取到排放数据";
                 });
             } else {
                 if (Upload(result, out string errorMsg)) {
                     this.Invoke((EventHandler)delegate {
                         this.txtBoxManualUpload.BackColor = Color.LightGreen;
+                        this.txtBoxManualUpload.ForeColor = m_foreColor;
                         this.txtBoxManualUpload.Text = "VIN[" + result.VIN + "]数据已手动上传";
                     });
                 } else {
@@ -674,7 +681,8 @@ namespace ISUZU_Dyno_Upload {
                         MessageBox.Show(errorMsg.Split('|')[1], "上传出错", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     } else {
                         this.Invoke((EventHandler)delegate {
-                            this.txtBoxManualUpload.BackColor = Color.OrangeRed;
+                            this.txtBoxManualUpload.BackColor = Color.Red;
+                            this.txtBoxManualUpload.ForeColor = Color.White;
                             this.txtBoxManualUpload.Text = "VIN[" + result.VIN + "]" + errorMsg;
                         });
                     }
@@ -693,13 +701,16 @@ namespace ISUZU_Dyno_Upload {
                         this.txtBoxVIN.Text = codes[0];
                     }
                     if (this.txtBoxVIN.Text.Length == 17) {
-                        this.txtBoxManualUpload.BackColor = m_ctrlColor;
+                        this.txtBoxManualUpload.BackColor = m_backColor;
+                        this.txtBoxManualUpload.ForeColor = m_foreColor;
                         this.txtBoxManualUpload.Text = "手动上传就绪";
                         if (ShowData(this.txtBoxVIN.Text)) {
-                            this.txtBoxManualUpload.BackColor = m_ctrlColor;
+                            this.txtBoxManualUpload.BackColor = m_backColor;
+                            this.txtBoxManualUpload.ForeColor = m_foreColor;
                             this.txtBoxManualUpload.Text = "数据显示完毕";
                         } else {
-                            this.txtBoxManualUpload.BackColor = Color.OrangeRed;
+                            this.txtBoxManualUpload.BackColor = Color.Red;
+                            this.txtBoxManualUpload.ForeColor = Color.White;
                             this.txtBoxManualUpload.Text = "VIN[" + this.txtBoxVIN.Text + "]未获取到排放数据";
                         }
                         this.txtBoxVIN.SelectAll();
@@ -759,7 +770,8 @@ namespace ISUZU_Dyno_Upload {
             m_dt56.Columns.Add("数值");
             this.GridView56.DataSource = m_dt56;
             SetGridViewColumnsSortMode(this.GridView56, DataGridViewColumnSortMode.Programmatic);
-            m_ctrlColor = this.txtBoxAutoUpload.BackColor;
+            m_backColor = this.txtBoxAutoUpload.BackColor;
+            m_foreColor = this.txtBoxAutoUpload.ForeColor;
         }
 
         private void BtnUpload_Click(object sender, EventArgs e) {

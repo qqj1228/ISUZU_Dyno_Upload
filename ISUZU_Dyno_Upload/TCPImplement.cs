@@ -1,25 +1,32 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.Xml;
 
 namespace ISUZU_Dyno_Upload {
     public class TCPImplement {
-        public readonly Logger m_log;
+        private const int BUFSIZE = 1024;
+        private readonly MainForm m_mainForm;
+        private readonly TextBox m_textBox;
+        private readonly Logger m_log;
         public DynoParameter m_dynoParam;
-        public EmissionInfo m_emiInfo;
+        public EmissionInfo m_emiInfoSim;
         public ModelOracle m_dbOracle;
         public TcpListener m_listener;
-        private const int BufSize = 1024;
 
-        public TCPImplement(DynoParameter dynoParam, EmissionInfo emiInfo, ModelOracle dbOracle, Logger log) {
+        public TCPImplement(MainForm mainForm, TextBox textBox, DynoParameter dynoParam, EmissionInfo emiInfoSim, ModelOracle dbOracle, Logger log) {
+            this.m_mainForm = mainForm;
+            this.m_textBox = textBox;
             this.m_log = log;
             this.m_dynoParam = dynoParam;
-            this.m_emiInfo = emiInfo;
+            this.m_emiInfoSim = emiInfoSim;
             this.m_dbOracle = dbOracle;
             this.m_listener = new TcpListener(IPAddress.Any, this.m_dynoParam.TCPPort);
             Task.Factory.StartNew(ListenForClients);
@@ -42,12 +49,12 @@ namespace ISUZU_Dyno_Upload {
         private void HandleClientComm(object param) {
             TcpClient client = (TcpClient)param;
             NetworkStream clientStream = client.GetStream();
-            byte[] recv = new byte[BufSize];
+            byte[] recv = new byte[BUFSIZE];
             string strRecv;
             int bytesRead;
             while (true) {
                 try {
-                    bytesRead = clientStream.Read(recv, 0, BufSize);
+                    bytesRead = clientStream.Read(recv, 0, BUFSIZE);
                 } catch (Exception ex) {
                     m_log.TraceError("TCP client occur error: " + ex.Message);
                     return;
@@ -75,19 +82,35 @@ namespace ISUZU_Dyno_Upload {
                 clientStream.Flush();
                 if (strVIN.Length == 17) {
                     EmissionInfo ei = new EmissionInfo();
+                    string errMsg = string.Empty;
                     if (m_dynoParam.UseSimData) {
-                        ei = m_emiInfo;
+                        ei = m_emiInfoSim;
                         ei.VehicleInfo1.VIN = strVIN;
                         ei.VehicleInfo2.VIN = strVIN;
                     } else {
                         try {
-                            m_dbOracle.GetEmissionInfo(strVIN, ei);
+                            m_dbOracle.GetEmissionInfo(strVIN, ei, out errMsg);
                         } catch (Exception ex) {
                             m_log.TraceError("GetEmissionInfo() error: " + ex.Message);
                         }
                     }
+                    if (errMsg.Length < 0) {
+                        m_log.TraceError("USP_GET_ENVIRONMENT_DATA() return error: " + errMsg);
+                        m_mainForm.Invoke((EventHandler)delegate {
+                            m_textBox.BackColor = Color.Red;
+                            m_textBox.ForeColor = Color.White;
+                            m_textBox.Text = errMsg;
+                        });
+                    } else {
+                        m_mainForm.Invoke((EventHandler)delegate {
+                            m_textBox.BackColor = Color.LightGreen;
+                            m_textBox.ForeColor = Color.Black;
+                            m_textBox.Text = "VIN[" + strVIN + "]测功机参数匹配成功";
+                        });
+                    }
+                    string JsonFormatted = JsonConvert.SerializeObject(ei, Newtonsoft.Json.Formatting.Indented);
+                    m_log.TraceInfo("Send dyno information: " + Environment.NewLine + JsonFormatted);
                     string strSend = JsonConvert.SerializeObject(ei);
-                    m_log.TraceInfo("Send dyno information: " + strSend);
                     sendMessage = Encoding.UTF8.GetBytes(strSend);
                     clientStream.Write(sendMessage, 0, sendMessage.Length);
                     clientStream.Flush();
