@@ -206,8 +206,9 @@ namespace ISUZU_Dyno_Upload {
                 try {
                     connection.Open();
                     // 调用存储过程名
-                    OracleCommand cmd = new OracleCommand("USP_GET_ENVIRONMENT_DATA", connection);
-                    cmd.CommandType = CommandType.StoredProcedure;
+                    OracleCommand cmd = new OracleCommand("USP_GET_ENVIRONMENT_DATA", connection) {
+                        CommandType = CommandType.StoredProcedure
+                    };
 
                     // 添加存储过程参数
                     OracleParameter IN_VIN = new OracleParameter {
@@ -225,7 +226,6 @@ namespace ISUZU_Dyno_Upload {
                         Direction = ParameterDirection.Input,
                         Value = DateTime.Now
                     };
-
                     cmd.Parameters.Add(IN_MAKE_DATE);
 
                     OracleParameter OUT_DATA_SET = new OracleParameter {

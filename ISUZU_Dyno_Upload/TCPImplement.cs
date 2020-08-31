@@ -42,6 +42,11 @@ namespace ISUZU_Dyno_Upload {
                     Task.Factory.StartNew(HandleClientComm, client);
                 } catch (Exception ex) {
                     m_log.TraceError("TCP listener occur error: " + ex.Message);
+                    m_mainForm.Invoke((EventHandler)delegate {
+                        m_textBox.BackColor = Color.Red;
+                        m_textBox.ForeColor = Color.White;
+                        m_textBox.Text = "TCP listener error: " + ex.Message;
+                    });
                 }
             }
         }
@@ -57,6 +62,11 @@ namespace ISUZU_Dyno_Upload {
                     bytesRead = clientStream.Read(recv, 0, BUFSIZE);
                 } catch (Exception ex) {
                     m_log.TraceError("TCP client occur error: " + ex.Message);
+                    m_mainForm.Invoke((EventHandler)delegate {
+                        m_textBox.BackColor = Color.Red;
+                        m_textBox.ForeColor = Color.White;
+                        m_textBox.Text = "TCP client error: " + ex.Message;
+                    });
                     return;
                 }
                 if (bytesRead == 0) {
@@ -77,6 +87,11 @@ namespace ISUZU_Dyno_Upload {
                 } else {
                     sendMessage = Encoding.UTF8.GetBytes("400");
                     m_log.TraceError("Received VIN is Illegal");
+                    m_mainForm.Invoke((EventHandler)delegate {
+                        m_textBox.BackColor = Color.Red;
+                        m_textBox.ForeColor = Color.White;
+                        m_textBox.Text = "VIN号长度不为17位";
+                    });
                 }
                 clientStream.Write(sendMessage, 0, sendMessage.Length);
                 clientStream.Flush();
@@ -92,6 +107,11 @@ namespace ISUZU_Dyno_Upload {
                             m_dbOracle.GetEmissionInfo(strVIN, ei, out errMsg);
                         } catch (Exception ex) {
                             m_log.TraceError("GetEmissionInfo() error: " + ex.Message);
+                            m_mainForm.Invoke((EventHandler)delegate {
+                                m_textBox.BackColor = Color.Red;
+                                m_textBox.ForeColor = Color.White;
+                                m_textBox.Text = "GetEmissionInfo() error: " + ex.Message;
+                            });
                         }
                     }
                     if (errMsg.Length < 0) {
