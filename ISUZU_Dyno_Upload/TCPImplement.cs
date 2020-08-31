@@ -114,7 +114,7 @@ namespace ISUZU_Dyno_Upload {
                             });
                         }
                     }
-                    if (errMsg.Length < 0) {
+                    if (errMsg.Length > 0) {
                         m_log.TraceError("USP_GET_ENVIRONMENT_DATA() return error: " + errMsg);
                         m_mainForm.Invoke((EventHandler)delegate {
                             m_textBox.BackColor = Color.Red;
