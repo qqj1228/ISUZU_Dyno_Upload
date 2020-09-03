@@ -98,6 +98,7 @@ namespace ISUZU_Dyno_Upload {
                 if (strVIN.Length == 17) {
                     EmissionInfo ei = new EmissionInfo();
                     string errMsg = string.Empty;
+                    bool error = false;
                     if (m_dynoParam.UseSimData) {
                         ei = m_emiInfoSim;
                         ei.VehicleInfo1.VIN = strVIN;
@@ -106,6 +107,7 @@ namespace ISUZU_Dyno_Upload {
                         try {
                             m_dbOracle.GetEmissionInfo(strVIN, ei, out errMsg);
                         } catch (Exception ex) {
+                            error = true;
                             m_log.TraceError("GetEmissionInfo() error: " + ex.Message);
                             m_mainForm.Invoke((EventHandler)delegate {
                                 m_textBox.BackColor = Color.Red;
@@ -114,19 +116,21 @@ namespace ISUZU_Dyno_Upload {
                             });
                         }
                     }
-                    if (errMsg.Length > 0) {
-                        m_log.TraceError("USP_GET_ENVIRONMENT_DATA() return error: " + errMsg);
-                        m_mainForm.Invoke((EventHandler)delegate {
-                            m_textBox.BackColor = Color.Red;
-                            m_textBox.ForeColor = Color.White;
-                            m_textBox.Text = errMsg;
-                        });
-                    } else {
-                        m_mainForm.Invoke((EventHandler)delegate {
-                            m_textBox.BackColor = Color.LightGreen;
-                            m_textBox.ForeColor = Color.Black;
-                            m_textBox.Text = "VIN[" + strVIN + "]测功机参数匹配成功";
-                        });
+                    if (!error) {
+                        if (errMsg.Length > 0 && errMsg != "null") {
+                            m_log.TraceError("USP_GET_ENVIRONMENT_DATA() return error: " + errMsg);
+                            m_mainForm.Invoke((EventHandler)delegate {
+                                m_textBox.BackColor = Color.Red;
+                                m_textBox.ForeColor = Color.White;
+                                m_textBox.Text = errMsg;
+                            });
+                        } else {
+                            m_mainForm.Invoke((EventHandler)delegate {
+                                m_textBox.BackColor = Color.LightGreen;
+                                m_textBox.ForeColor = Color.Black;
+                                m_textBox.Text = "VIN[" + strVIN + "]测功机参数匹配成功";
+                            });
+                        }
                     }
                     string JsonFormatted = JsonConvert.SerializeObject(ei, Newtonsoft.Json.Formatting.Indented);
                     m_log.TraceInfo("Send dyno information: " + Environment.NewLine + JsonFormatted);

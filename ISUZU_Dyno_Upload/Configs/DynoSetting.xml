@@ -2,5 +2,5 @@
 <DynoParameter xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <Enable>true</Enable>
   <TCPPort>50001</TCPPort>
-  <UseSimData>true</UseSimData>
+  <UseSimData>false</UseSimData>
 </DynoParameter>

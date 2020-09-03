@@ -536,16 +536,20 @@ namespace ISUZU_Dyno_Upload {
             string strSQL = "select [VIN], [JCLSH] from [已检车辆库] where [Upload] = '0' and [JCJG] = '合格' and [JCLX] = '初检'";
             m_log.TraceInfo("==> T-SQL: " + strSQL);
             string[,] cars = SelectDB(strSQL);
-            m_log.TraceInfo(cars.GetLength(0) + " record(s) will upload");
-            for (int i = 0; i < cars.GetLength(0); i++) {
-                UploadField result = new UploadField {
-                    VIN = cars[i, 0],
-                    JCLSH = cars[i, 1]
-                };
-                string strLog = "===== Record " + (i + 1).ToString() + ": [VIN: " + result.VIN + ", JCLSH: " + result.JCLSH + "] =====";
-                m_log.TraceInfo(strLog);
-                GetUploadData(FieldUL, iCNLenb, result);
-                resultList.Add(result);
+            if (cars != null) {
+                m_log.TraceInfo(cars.GetLength(0) + " record(s) will upload");
+                for (int i = 0; i < cars.GetLength(0); i++) {
+                    UploadField result = new UploadField {
+                        VIN = cars[i, 0],
+                        JCLSH = cars[i, 1]
+                    };
+                    string strLog = "===== Record " + (i + 1).ToString() + ": [VIN: " + result.VIN + ", JCLSH: " + result.JCLSH + "] =====";
+                    m_log.TraceInfo(strLog);
+                    GetUploadData(FieldUL, iCNLenb, result);
+                    resultList.Add(result);
+                }
+            } else {
+                m_log.TraceError("SelectDB() return null");
             }
             return resultList;
         }

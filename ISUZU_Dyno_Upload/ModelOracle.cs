@@ -7,14 +7,18 @@ using System.Text;
 
 namespace ISUZU_Dyno_Upload {
     public class ModelOracle {
-        public readonly Logger m_log;
+        private readonly Logger m_log;
+        private readonly OracleMES m_oracleMES;
+        private readonly OracleMES m_oracleDyno;
         private string ConnectionMes { get; set; }
         private string ConnectionDyno { get; set; }
         public bool Connected { get; set; }
 
         public ModelOracle(OracleMES oracleMES, OracleMES oracleDyno, Logger log) {
             m_log = log;
+            m_oracleMES = oracleMES;
             ConnectionMes = ReadConfig(oracleMES);
+            m_oracleDyno = oracleDyno;
             ConnectionDyno = ReadConfig(oracleDyno);
             Connected = false;
         }
@@ -206,10 +210,15 @@ namespace ISUZU_Dyno_Upload {
                 try {
                     connection.Open();
                     // 调用存储过程名
-                    OracleCommand cmd = new OracleCommand("USP_GET_ENVIRONMENT_DATA", connection) {
+#if DEBUG
+                    string cmdText = "PKG_IF_MES.USP_GET_ENVIRONMENT_DATA";
+#else
+                    string cmdText = m_oracleDyno.ServiceName + ".PKG_IF_MES.USP_GET_ENVIRONMENT_DATA";
+#endif
+                    m_log.TraceInfo("OracleCommand Text: " + cmdText);
+                    OracleCommand cmd = new OracleCommand(cmdText, connection) {
                         CommandType = CommandType.StoredProcedure
                     };
-
                     // 添加存储过程参数
                     OracleParameter IN_VIN = new OracleParameter {
                         ParameterName = "IN_VIN",
@@ -308,7 +317,28 @@ namespace ISUZU_Dyno_Upload {
                 ei.VehicleInfo2.DPF = dr["DPF_S"].ToString();
                 ei.VehicleInfo2.DPFXH = dr["DPFXH_S"].ToString();
                 ei.VehicleInfo2.DCRL = dr["DCHRL_S"].ToString();
-                ei.VehicleInfo2.JCFF = dr["JCFF_S"].ToString();
+                // 处理检测方法字符串
+                string strTestMethod = dr["JCFF_S"].ToString();
+                if (strTestMethod.Contains("双怠速")) {
+                    strTestMethod = "双怠速法";
+                } else if (strTestMethod.Contains("稳态工况")) {
+                    strTestMethod = "稳态工况";
+                } else if (strTestMethod.Contains("简易瞬态")) {
+                    strTestMethod = "简易瞬态";
+                } else if (strTestMethod.Contains("加载减速")) {
+                    strTestMethod = "加载减速";
+                } else if (strTestMethod.Contains("自由加速")) {
+                    strTestMethod = "自由加速";
+                } else if (strTestMethod.Contains("林格曼")) {
+                    strTestMethod = "林格曼黑度";
+                } else if (strTestMethod.Contains("瞬态工况")) {
+                    strTestMethod = "瞬态工况";
+                } else if (strTestMethod.Contains("不透光")) {
+                    strTestMethod = "不透光法";
+                } else if (strTestMethod.Contains("滤纸式")) {
+                    strTestMethod = "滤纸式法";
+                }
+                ei.VehicleInfo2.JCFF = strTestMethod;
             }
 
         }
