@@ -211,8 +211,10 @@ namespace ISUZU_Dyno_Upload {
                     connection.Open();
                     // 调用存储过程名
 #if DEBUG
-                    string cmdText = "PKG_IF_MES.USP_GET_ENVIRONMENT_DATA";
+                    // 本地测试使用用户ID
+                    string cmdText = m_oracleDyno.UserID + ".PKG_IF_MES.USP_GET_ENVIRONMENT_DATA";
 #else
+                    // 现场生产环境使用服务名
                     string cmdText = m_oracleDyno.ServiceName + ".PKG_IF_MES.USP_GET_ENVIRONMENT_DATA";
 #endif
                     m_log.TraceInfo("OracleCommand Text: " + cmdText);

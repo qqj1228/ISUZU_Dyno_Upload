@@ -52,6 +52,13 @@ namespace ISUZU_Dyno_Upload {
             }
         }
 
+        public void TestConnect() {
+            using (SqlConnection sqlConn = new SqlConnection(StrConn)) {
+                sqlConn.Open();
+                sqlConn.Close();
+            }
+        }
+
         public string[] GetTableColumns(string strTable) {
             using (SqlConnection sqlConn = new SqlConnection(StrConn)) {
                 try {
@@ -533,7 +540,7 @@ namespace ISUZU_Dyno_Upload {
 
         public List<UploadField> GetDynoData(UploadField FieldUL, int iCNLenb) {
             List<UploadField> resultList = new List<UploadField>();
-            string strSQL = "select [VIN], [JCLSH] from [已检车辆库] where [Upload] = '0' and [JCJG] = '合格' and [JCLX] = '初检'";
+            string strSQL = "select [VIN], [JCLSH] from [已检车辆库] where [Upload] = '0' and [Skip] = '0' and [JCJG] = '合格' and [JCLX] = '初检'";
             m_log.TraceInfo("==> T-SQL: " + strSQL);
             string[,] cars = SelectDB(strSQL);
             if (cars != null) {
@@ -685,6 +692,20 @@ namespace ISUZU_Dyno_Upload {
                 { "氮氧化物限值(10^-6)", GetFieldValue(FieldUL.NOXLIMIT, JCLSH, true, 4) }
             };
             return ret;
+        }
+
+        public void AddSkipField() {
+            string strSQL = "select top (1) [Skip] from [已检车辆库]";
+            string[,] rets = SelectDB(strSQL);
+            if (rets == null || rets.GetLength(0) < 1) {
+                strSQL = "alter table [已检车辆库] add [Skip] int not null default(0)";
+                RunSQL(strSQL);
+            }
+        }
+
+        public int SetSkip(int value, string JCLSH) {
+            string strSQL = "update [已检车辆库] set [Skip] = '" + value.ToString() + "' where [JCLSH] = '" + JCLSH + "'";
+            return RunSQL(strSQL);
         }
 
     }

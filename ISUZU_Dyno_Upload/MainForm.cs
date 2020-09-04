@@ -12,6 +12,7 @@ using System.Windows.Forms;
 
 namespace ISUZU_Dyno_Upload {
     public partial class MainForm : Form {
+        public const int RETRY_NUM = 10;
         public Logger m_log;
         public Logger m_logTCP;
         public Config m_cfg;
@@ -32,6 +33,7 @@ namespace ISUZU_Dyno_Upload {
         public DataTable m_dt56;
         public Color m_backColor;
         public Color m_foreColor;
+        public Dictionary<string, int> m_VehicleRetryDic;
 
         public MainForm() {
             InitializeComponent();
@@ -43,12 +45,22 @@ namespace ISUZU_Dyno_Upload {
             m_db = new Model(m_cfg.DB.Data.SqlServer, m_log);
             m_dbOracle = new ModelOracle(m_cfg.DB.Data.Oracle, m_cfg.DB.Data.Dyno, m_log);
             m_iCNLenb = 3;
+            m_VehicleRetryDic = new Dictionary<string, int>();
             Task.Factory.StartNew(new Action(() => {
                 try {
                     m_iCNLenb = m_dbOracle.GetCNLenb();
                 } catch (Exception ex) {
                     m_log.TraceError("Can't connect with MES: " + ex.Message);
                     MessageBox.Show("无法与MES通讯，请检查设置\n" + ex.Message, "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }));
+            Task.Factory.StartNew(new Action(() => {
+                try {
+                    m_db.TestConnect();
+                    m_db.AddSkipField();
+                } catch (Exception ex) {
+                    m_log.TraceError("Can't connect with dyno database: " + ex.Message);
+                    MessageBox.Show("无法与测功机数据库通讯，请检查设置\n" + ex.Message, "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }));
 #if DEBUG
@@ -149,6 +161,14 @@ namespace ISUZU_Dyno_Upload {
                     if (errorMsg.Contains("Exception|")) {
                         MessageBox.Show(errorMsg.Split('|')[1], "上传出错", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     } else {
+                        if (m_VehicleRetryDic.ContainsKey(result.JCLSH)) {
+                            if (m_VehicleRetryDic[result.JCLSH]++ >= RETRY_NUM) {
+                                m_db.SetSkip(1, result.JCLSH);
+                                m_log.TraceWarning(string.Format("SetSkip at VIN: {0}, JCLSH: {1}", result.VIN, result.JCLSH));
+                            }
+                        } else {
+                            m_VehicleRetryDic.Add(result.JCLSH, 1);
+                        }
                         this.Invoke((EventHandler)delegate {
                             this.txtBoxAutoUpload.BackColor = Color.Red;
                             this.txtBoxAutoUpload.ForeColor = Color.White;
