@@ -12,6 +12,7 @@ create or replace package body PKG_IF_MES is
                                                          ERROR_MESSAGE    OUT VARCHAR2) AS
     
     BEGIN
+        ERROR_MESSAGE := '';
         open OUT_DATA_SET for select * from dyno_param;
     END;
 end PKG_IF_MES;
