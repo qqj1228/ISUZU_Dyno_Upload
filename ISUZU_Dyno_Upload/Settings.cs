@@ -66,11 +66,22 @@ namespace ISUZU_Dyno_Upload {
         }
     }
 
+    // 表示外检报告编号/检测流水号的字段，作为外键使用
+    [Serializable]
+    public class F_KEY_S {
+        public string Name { get; set; } // 外键的字段名
+        public string Value { get; set; } // 外键的字段值
+        public F_KEY_S() {
+            Name = "";
+            Value = "";
+        }
+    }
+
     [Serializable]
     public class UploadField {
+        public F_KEY_S F_KEY { get; set; }
         // IF_EM_WQPF_1
         public string VIN { get; set; }
-        public string JCLSH { get; set; } // 检测流水号，在IF_EM_WQPF_1表中没有，存在这里，程序中需要用到
         // IF_EM_WQPF_2
         public string RH { get; set; }
         public string ET { get; set; }
@@ -156,6 +167,7 @@ namespace ISUZU_Dyno_Upload {
         public string DYNOMANUF { get; set; }
 
         public UploadField() {
+            F_KEY = new F_KEY_S();
             VIN = "";
             RH = "";
             ET = "";
@@ -246,110 +258,31 @@ namespace ISUZU_Dyno_Upload {
     }
 
     [Serializable]
-    public class VehicleInfo1Class {
-        public string License { get; set; }
-        public string VIN { get; set; }
-        public string RegisterDate { get; set; }
-        public string ISQZ { get; set; }
-        public string VehicleType { get; set; }
-        public string CLXH { get; set; }
-        public string FDJXH { get; set; }
-        public string HasOBD { get; set; }
-        public string FuelType { get; set; }
-        public string Standard { get; set; }
-        public string OBDCommCL { get; set; }
-        public string OBDCommCX { get; set; }
-    }
-
-    [Serializable]
-    public class VehicleInfo2Class {
-        public string VehicleKind { get; set; }
-        public string License { get; set; }
-        public string VIN { get; set; }
-        public string RegisterDate { get; set; }
-        public string VehicleType { get; set; }
-        public string Model { get; set; }
-        public string GearBoxType { get; set; }
-        public string AdmissionMode { get; set; }
-        public string Volume { get; set; }
-        public string Odometer { get; set; }
-        public string FuelType { get; set; }
-        public string SupplyMode { get; set; }
-        public string RatedRev { get; set; }
-        public string RatedPower { get; set; }
-        public string DriveMode { get; set; }
-        public string Owner { get; set; }
-        public string Address { get; set; }
-        public string MaxMass { get; set; }
-        public string RefMass { get; set; }
-        public string HasODB { get; set; }
-        public string Phone { get; set; }
-        public string HasPurge { get; set; }
-        public string IsEFI { get; set; }
-        public string MaxLoad { get; set; }
-        public string CarOrTruck { get; set; }
-        public string Cylinder { get; set; }
-        public string IsTransform { get; set; }
-        public string StandardID { get; set; }
-        public string IsAsm { get; set; }
-        public string QCZZCJ { get; set; }
-        public string FDJZZC { get; set; }
-        public string DDJXH { get; set; }
-        public string XNZZXH { get; set; }
-        public string CHZHQXH { get; set; }
-        public string HPYS { get; set; }
-        public string SCR { get; set; }
-        public string SCRXH { get; set; }
-        public string DPF { get; set; }
-        public string DPFXH { get; set; }
-        public string DCRL { get; set; }
-        public string JCFF { get; set; }
-    }
-
-    [Serializable]
-    public class LimitValueClass {
-        public string AmbientCOUp { get; set; }
-        public string AmbientCO2Up { get; set; }
-        public string AmbientHCUp { get; set; }
-        public string AmbientNOUp { get; set; }
-        public string BackgroundCOUp { get; set; }
-        public string BackgroundCO2Up { get; set; }
-        public string BackgroundHCUp { get; set; }
-        public string BackgroundNOUp { get; set; }
-        public string ResidualHCUp { get; set; }
-        public string CO5025 { get; set; }
-        public string HC5025 { get; set; }
-        public string NO5025 { get; set; }
-        public string Lambda5025Up { get; set; }
-        public string Lambda5025Below { get; set; }
-        public string CO2540 { get; set; }
-        public string HC2540 { get; set; }
-        public string NO2540 { get; set; }
-        public string Lambda2540Up { get; set; }
-        public string Lambda2540Below { get; set; }
-        public string COAndCO2 { get; set; }
-        public string HighIdleCO { get; set; }
-        public string HighIdleHC { get; set; }
-        public string IdleCO { get; set; }
-        public string IdleHC { get; set; }
-        public string FASmokeHSU { get; set; }
-        public string FASmokeK { get; set; }
-        public string SmokeK { get; set; }
-        public string SmokeHSU { get; set; }
-        public string SmokeNO { get; set; }
-        public string MaxPower { get; set; }
-    }
-
-    [Serializable]
     public class EmissionInfo {
-        public VehicleInfo1Class VehicleInfo1 { get; set; }
-        public VehicleInfo2Class VehicleInfo2 { get; set; }
-        public LimitValueClass LimitValue { get; set; }
-        public EmissionInfo() {
-            VehicleInfo1 = new VehicleInfo1Class();
-            VehicleInfo2 = new VehicleInfo2Class();
-            LimitValue = new LimitValueClass();
-        }
+        public string VehicleModel { get; set; } // 车辆型号
+        public string OpenInfoSN { get; set; } // 信息公开编号
+        public string VehicleMfr { get; set; } // 车辆生产企业
+        public string EngineModel { get; set; } // 发动机型号
+        public string EngineSN { get; set; } // 发动机编号
+        public string EngineMfr { get; set; } // 发动机生产企业
+        public double EngineVolume { get; set; } // 发动机排量
+        public int CylinderQTY { get; set; } // 气缸数量
+        public int FuelSupply { get; set; } // 燃油供给系统
+        public double RatedPower { get; set; } // 额定功率
+        public int RatedRPM { get; set; } // 额定转速
+        public int EmissionStage { get; set; } // 车辆排放阶段
+        public int Transmission { get; set; } // 变速箱形式
+        public string CatConverter { get; set; } // 催化转化器
+        public int RefMass { get; set; } // 基准质量
+        public int MaxMass { get; set; } // 最大设计总质量
+        public string OBDLocation { get; set; } // OBD接口位置
+        public string PostProcessorType { get; set; } // 后处理类型
+        public string PostProcessorModel { get; set; } // 后处理型号
+        public string MotorModel { get; set; } // 电动机型号
+        public string EnergyStorage { get; set; } // 储能装置型号
+        public string BatteryCap { get; set; } // 电池容量
+        public int TestMethod { get; set; } // 检测方法
+        public string Name { get; set; } // 检验员名字
     }
 
 }

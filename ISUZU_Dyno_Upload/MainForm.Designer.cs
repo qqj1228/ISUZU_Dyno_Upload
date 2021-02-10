@@ -122,6 +122,7 @@
             // 
             // txtBoxVIN
             // 
+            this.txtBoxVIN.CharacterCasing = System.Windows.Forms.CharacterCasing.Upper;
             this.txtBoxVIN.Dock = System.Windows.Forms.DockStyle.Fill;
             this.txtBoxVIN.Location = new System.Drawing.Point(78, 3);
             this.txtBoxVIN.Name = "txtBoxVIN";
@@ -517,7 +518,7 @@
             this.Controls.Add(this.tblLayoutMain);
             this.Name = "MainForm";
             this.Padding = new System.Windows.Forms.Padding(12);
-            this.Text = "ISUZU_Dyno_Upload";
+            this.Text = "测功机数据上传与参数匹配 - 适配新测功机客户端";
             this.Load += new System.EventHandler(this.MainForm_Load);
             this.grpBoxInfo.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.GridViewInfo)).EndInit();

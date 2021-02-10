@@ -37,7 +37,7 @@ namespace ISUZU_Dyno_Upload {
 
         public MainForm() {
             InitializeComponent();
-            this.Text = "ISUZU_Dyno_Upload Ver: " + MainFileVersion.AssemblyVersion;
+            Text += " Ver: " + MainFileVersion.AssemblyVersion;
             m_log = new Logger("Upload", ".\\log", EnumLogLevel.LogLevelAll, true, 100);
             m_log.TraceInfo("==================================================================");
             m_log.TraceInfo("==================== START Ver: " + MainFileVersion.AssemblyVersion + " ====================");
@@ -57,6 +57,7 @@ namespace ISUZU_Dyno_Upload {
             Task.Factory.StartNew(new Action(() => {
                 try {
                     m_db.TestConnect();
+                    m_db.AddUploadField();
                     m_db.AddSkipField();
                 } catch (Exception ex) {
                     m_log.TraceError("Can't connect with dyno database: " + ex.Message);
@@ -81,7 +82,7 @@ namespace ISUZU_Dyno_Upload {
 
         private void StartDynoServer() {
             m_logTCP = new Logger("DynoServer", ".\\log", EnumLogLevel.LogLevelAll, true, 100);
-            m_dynoServer = new TCPImplement(this, this.txtBoxDynoParam, m_cfg.DynoParam.Data, m_cfg.DynoSimData.Data, m_dbOracle, m_logTCP);
+            m_dynoServer = new TCPImplement(this, txtBoxDynoParam, m_cfg.DynoParam.Data, m_cfg.DynoSimData.Data, m_dbOracle, m_logTCP);
         }
 
         private bool Upload(UploadField result, out string errorMsg) {
@@ -98,6 +99,8 @@ namespace ISUZU_Dyno_Upload {
             DataTable dt52 = new DataTable("IF_EM_WQPF_5_2");
             DataTable dt53 = new DataTable("IF_EM_WQPF_5_3");
             DataTable dt54 = new DataTable("IF_EM_WQPF_5_4");
+            DataTable dt55 = new DataTable("IF_EM_WQPF_5_5");
+            DataTable dt56 = new DataTable("IF_EM_WQPF_5_6");
             DataTable dt6 = new DataTable("IF_EM_WQPF_6");
             try {
                 string[] ID_MES = m_dbOracle.GetValue("IF_EM_WQPF_1", "ID", "VIN", result.VIN);
@@ -117,11 +120,15 @@ namespace ISUZU_Dyno_Upload {
                     case "4":
                         SetDataTable54Oracle(ID_MES[0], dt54, result);
                         break;
-                    default:
+                    case "6":
+                        SetDataTable55Oracle(ID_MES[0], dt55, result);
+                        break;
+                    case "8":
+                        SetDataTable56Oracle(ID_MES[0], dt56, result);
                         break;
                     }
                     SetDataTable6Oracle(ID_MES[0], dt6, result);
-                    m_db.SetUpload(1, result.JCLSH);
+                    m_db.SetUpload(1, result.F_KEY);
                     bRet = true;
                 } else {
                     m_log.TraceWarning("Skip this VIN[" + result.VIN + "] because it is not in MES");
@@ -137,6 +144,8 @@ namespace ISUZU_Dyno_Upload {
                 dt52.Dispose();
                 dt53.Dispose();
                 dt54.Dispose();
+                dt55.Dispose();
+                dt56.Dispose();
                 dt6.Dispose();
             }
             return bRet;
@@ -152,27 +161,27 @@ namespace ISUZU_Dyno_Upload {
             }
             foreach (UploadField result in resultList) {
                 if (Upload(result, out string errorMsg)) {
-                    this.Invoke((EventHandler)delegate {
-                        this.txtBoxAutoUpload.BackColor = Color.LightGreen;
-                        this.txtBoxAutoUpload.ForeColor = m_foreColor;
-                        this.txtBoxAutoUpload.Text = "VIN[" + result.VIN + "]数据已自动上传";
+                    Invoke((EventHandler)delegate {
+                        txtBoxAutoUpload.BackColor = Color.LightGreen;
+                        txtBoxAutoUpload.ForeColor = m_foreColor;
+                        txtBoxAutoUpload.Text = "VIN[" + result.VIN + "]数据已自动上传";
                     });
                 } else {
                     if (errorMsg.Contains("Exception|")) {
                         MessageBox.Show(errorMsg.Split('|')[1], "上传出错", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     } else {
-                        if (m_VehicleRetryDic.ContainsKey(result.JCLSH)) {
-                            if (m_VehicleRetryDic[result.JCLSH]++ >= RETRY_NUM) {
-                                m_db.SetSkip(1, result.JCLSH);
-                                m_log.TraceWarning(string.Format("SetSkip at VIN: {0}, JCLSH: {1}", result.VIN, result.JCLSH));
+                        if (m_VehicleRetryDic.ContainsKey(result.F_KEY.Value)) {
+                            if (m_VehicleRetryDic[result.F_KEY.Value]++ >= RETRY_NUM) {
+                                m_db.SetSkip(1, result.F_KEY);
+                                m_log.TraceWarning(string.Format("SetSkip at VIN: {0}, {1}: {2}", result.VIN, result.F_KEY.Name, result.F_KEY.Value));
                             }
                         } else {
-                            m_VehicleRetryDic.Add(result.JCLSH, 1);
+                            m_VehicleRetryDic.Add(result.F_KEY.Value, 1);
                         }
-                        this.Invoke((EventHandler)delegate {
-                            this.txtBoxAutoUpload.BackColor = Color.Red;
-                            this.txtBoxAutoUpload.ForeColor = Color.White;
-                            this.txtBoxAutoUpload.Text = "VIN[" + result.VIN + "]" + errorMsg;
+                        Invoke((EventHandler)delegate {
+                            txtBoxAutoUpload.BackColor = Color.Red;
+                            txtBoxAutoUpload.ForeColor = Color.White;
+                            txtBoxAutoUpload.Text = "VIN[" + result.VIN + "]" + errorMsg;
                         });
                     }
                 }
@@ -180,31 +189,27 @@ namespace ISUZU_Dyno_Upload {
         }
 
         private void SetDataTable2Oracle(string strKeyID, DataTable dt, UploadField result) {
-            dt.Columns.Add("ID", typeof(string));                       // 0
-            dt.Columns.Add("WQPF_ID", typeof(string));                  // 1
-
-            dt.Columns.Add("RH", typeof(string));                       // 2
-            dt.Columns.Add("ET", typeof(string));                       // 3
-            dt.Columns.Add("AP", typeof(string));                       // 4
-
-            dt.Columns.Add("CREATIONTIME", typeof(DateTime));           // 5
-            dt.Columns.Add("CREATOR", typeof(string));                  // 6
-            dt.Columns.Add("LASTMODIFICATIONTIME", typeof(DateTime));   // 7
-            dt.Columns.Add("LASTMODIFIER", typeof(string));             // 8
-            dt.Columns.Add("DELETIONTIME", typeof(DateTime));           // 9
-            dt.Columns.Add("ISDELETED", typeof(string));                // 10
-            dt.Columns.Add("DELETER", typeof(string));                  // 11
+            dt.Columns.Add("ID", typeof(string));
+            dt.Columns.Add("WQPF_ID", typeof(string));
+            dt.Columns.Add("RH", typeof(string));
+            dt.Columns.Add("ET", typeof(string));
+            dt.Columns.Add("AP", typeof(string));
+            dt.Columns.Add("CREATIONTIME", typeof(DateTime));
+            dt.Columns.Add("CREATOR", typeof(string));
+            dt.Columns.Add("LASTMODIFICATIONTIME", typeof(DateTime));
+            dt.Columns.Add("LASTMODIFIER", typeof(string));
+            dt.Columns.Add("DELETIONTIME", typeof(DateTime));
+            dt.Columns.Add("ISDELETED", typeof(string));
+            dt.Columns.Add("DELETER", typeof(string));
 
             DataRow dr = dt.NewRow();
-            dr[1] = strKeyID;
-
-            dr[2] = result.RH;
-            dr[3] = result.ET;
-            dr[4] = result.AP;
-
-            dr[7] = DateTime.Now.ToLocalTime();
-            dr[8] = m_cfg.DB.Name;
-            dr[10] = "0";
+            dr["WQPF_ID"] = strKeyID;
+            dr["RH"] = result.RH;
+            dr["ET"] = result.ET;
+            dr["AP"] = result.AP;
+            dr["LASTMODIFICATIONTIME"] = DateTime.Now.ToLocalTime();
+            dr["LASTMODIFIER"] = m_cfg.DB.Data.Name;
+            dr["ISDELETED"] = "0";
             dt.Rows.Add(dr);
 
             int iRet;
@@ -224,36 +229,33 @@ namespace ISUZU_Dyno_Upload {
         }
 
         private void SetDataTable3Oracle(string strKeyID, DataTable dt, UploadField result) {
-            dt.Columns.Add("ID", typeof(string));                       // 0
-            dt.Columns.Add("WQPF_ID", typeof(string));                  // 1
-
-            dt.Columns.Add("TESTTYPE", typeof(string));                 // 2
-            dt.Columns.Add("TESTNO", typeof(string));                   // 3
-            dt.Columns.Add("TESTDATE", typeof(string));                 // 4
-            dt.Columns.Add("APASS", typeof(string));                    // 5
-            dt.Columns.Add("OPASS", typeof(string));                    // 6
-            dt.Columns.Add("OTESTDATE", typeof(string));                // 7
-            dt.Columns.Add("EPASS", typeof(string));                    // 8
-            dt.Columns.Add("RESULT", typeof(string));                   // 9
-
-            dt.Columns.Add("CREATIONTIME", typeof(DateTime));           // 10
-            dt.Columns.Add("CREATOR", typeof(string));                  // 11
-            dt.Columns.Add("LASTMODIFICATIONTIME", typeof(DateTime));   // 12
-            dt.Columns.Add("LASTMODIFIER", typeof(string));             // 13
-            dt.Columns.Add("DELETIONTIME", typeof(DateTime));           // 14
-            dt.Columns.Add("ISDELETED", typeof(string));                // 15
-            dt.Columns.Add("DELETER", typeof(string));                  // 16
+            dt.Columns.Add("ID", typeof(string));
+            dt.Columns.Add("WQPF_ID", typeof(string));
+            dt.Columns.Add("TESTTYPE", typeof(string));
+            dt.Columns.Add("TESTNO", typeof(string));
+            dt.Columns.Add("TESTDATE", typeof(string));
+            dt.Columns.Add("APASS", typeof(string));
+            dt.Columns.Add("OPASS", typeof(string));
+            dt.Columns.Add("OTESTDATE", typeof(string));
+            dt.Columns.Add("EPASS", typeof(string));
+            dt.Columns.Add("RESULT", typeof(string));
+            dt.Columns.Add("CREATIONTIME", typeof(DateTime));
+            dt.Columns.Add("CREATOR", typeof(string));
+            dt.Columns.Add("LASTMODIFICATIONTIME", typeof(DateTime));
+            dt.Columns.Add("LASTMODIFIER", typeof(string));
+            dt.Columns.Add("DELETIONTIME", typeof(DateTime));
+            dt.Columns.Add("ISDELETED", typeof(string));
+            dt.Columns.Add("DELETER", typeof(string));
 
             DataRow dr = dt.NewRow();
-            dr[1] = strKeyID;
-            dr[2] = result.TESTTYPE;
-            dr[4] = result.TESTDATE;
-            dr[8] = result.EPASS;
-            //dr[9] = result.EPASS;
-
-            dr[12] = DateTime.Now.ToLocalTime();
-            dr[13] = m_cfg.DB.Name;
-            dr[15] = "0";
+            dr["WQPF_ID"] = strKeyID;
+            dr["TESTTYPE"] = result.TESTTYPE;
+            dr["TESTDATE"] = result.TESTDATE;
+            dr["EPASS"] = result.EPASS;
+            //dr["RESULT"] = result.EPASS;
+            dr["LASTMODIFICATIONTIME"] = DateTime.Now.ToLocalTime();
+            dr["LASTMODIFIER"] = m_cfg.DB.Data.Name;
+            dr["ISDELETED"] = "0";
             dt.Rows.Add(dr);
             int iRet;
             try {
@@ -272,46 +274,43 @@ namespace ISUZU_Dyno_Upload {
         }
 
         private void SetDataTable51Oracle(string strKeyID, DataTable dt, UploadField result) {
-            dt.Columns.Add("ID", typeof(string));                       // 0
-            dt.Columns.Add("WQPF_ID", typeof(string));                  // 1
-
-            dt.Columns.Add("REAC", typeof(string));                     // 2
-            dt.Columns.Add("LEACMAX", typeof(string));                  // 3
-            dt.Columns.Add("LEACMIN", typeof(string));                  // 4
-            dt.Columns.Add("LRCO", typeof(string));                     // 5
-            dt.Columns.Add("LLCO", typeof(string));                     // 6
-            dt.Columns.Add("LRHC", typeof(string));                     // 7
-            dt.Columns.Add("LLHC", typeof(string));                     // 8
-            dt.Columns.Add("HRCO", typeof(string));                     // 9
-            dt.Columns.Add("HLCO", typeof(string));                     // 10
-            dt.Columns.Add("HRHC", typeof(string));                     // 11
-            dt.Columns.Add("HLHC", typeof(string));                     // 12
-
-            dt.Columns.Add("CREATIONTIME", typeof(DateTime));           // 13
-            dt.Columns.Add("CREATOR", typeof(string));                  // 14
-            dt.Columns.Add("LASTMODIFICATIONTIME", typeof(DateTime));   // 15
-            dt.Columns.Add("LASTMODIFIER", typeof(string));             // 16
-            dt.Columns.Add("DELETIONTIME", typeof(DateTime));           // 17
-            dt.Columns.Add("ISDELETED", typeof(string));                // 18
-            dt.Columns.Add("DELETER", typeof(string));                  // 19
+            dt.Columns.Add("ID", typeof(string));
+            dt.Columns.Add("WQPF_ID", typeof(string));
+            dt.Columns.Add("REAC", typeof(string));
+            dt.Columns.Add("LEACMAX", typeof(string));
+            dt.Columns.Add("LEACMIN", typeof(string));
+            dt.Columns.Add("LRCO", typeof(string));
+            dt.Columns.Add("LLCO", typeof(string));
+            dt.Columns.Add("LRHC", typeof(string));
+            dt.Columns.Add("LLHC", typeof(string));
+            dt.Columns.Add("HRCO", typeof(string));
+            dt.Columns.Add("HLCO", typeof(string));
+            dt.Columns.Add("HRHC", typeof(string));
+            dt.Columns.Add("HLHC", typeof(string));
+            dt.Columns.Add("CREATIONTIME", typeof(DateTime));
+            dt.Columns.Add("CREATOR", typeof(string));
+            dt.Columns.Add("LASTMODIFICATIONTIME", typeof(DateTime));
+            dt.Columns.Add("LASTMODIFIER", typeof(string));
+            dt.Columns.Add("DELETIONTIME", typeof(DateTime));
+            dt.Columns.Add("ISDELETED", typeof(string));
+            dt.Columns.Add("DELETER", typeof(string));
 
             DataRow dr = dt.NewRow();
-            dr[1] = strKeyID;
-            dr[2] = result.REAC;
-            dr[3] = result.LEACMAX;
-            dr[4] = result.LEACMIN;
-            dr[5] = result.LRCO;
-            dr[6] = result.LLCO;
-            dr[7] = result.LRHC;
-            dr[8] = result.LLHC;
-            dr[9] = result.HRCO;
-            dr[10] = result.HLCO;
-            dr[11] = result.HRHC;
-            dr[12] = result.HLHC;
-
-            dr[15] = DateTime.Now.ToLocalTime();
-            dr[16] = m_cfg.DB.Name;
-            dr[18] = "0";
+            dr["WQPF_ID"] = strKeyID;
+            dr["REAC"] = result.REAC;
+            dr["LEACMAX"] = result.LEACMAX;
+            dr["LEACMIN"] = result.LEACMIN;
+            dr["LRCO"] = result.LRCO;
+            dr["LLCO"] = result.LLCO;
+            dr["LRHC"] = result.LRHC;
+            dr["LLHC"] = result.LLHC;
+            dr["HRCO"] = result.HRCO;
+            dr["HLCO"] = result.HLCO;
+            dr["HRHC"] = result.HRHC;
+            dr["HLHC"] = result.HLHC;
+            dr["LASTMODIFICATIONTIME"] = DateTime.Now.ToLocalTime();
+            dr["LASTMODIFIER"] = m_cfg.DB.Data.Name;
+            dr["ISDELETED"] = "0";
             dt.Rows.Add(dr);
             int iRet;
             try {
@@ -331,48 +330,45 @@ namespace ISUZU_Dyno_Upload {
         }
 
         private void SetDataTable52Oracle(string strKeyID, DataTable dt, UploadField result) {
-            dt.Columns.Add("ID", typeof(string));                       // 0
-            dt.Columns.Add("WQPF_ID", typeof(string));                  // 1
-
-            dt.Columns.Add("ARHC5025", typeof(string));                 // 2
-            dt.Columns.Add("ALHC5025", typeof(string));                 // 3
-            dt.Columns.Add("ARCO5025", typeof(string));                 // 4
-            dt.Columns.Add("ALCO5025", typeof(string));                 // 5
-            dt.Columns.Add("ARNOX5025", typeof(string));                // 6
-            dt.Columns.Add("ALNOX5025", typeof(string));                // 7
-            dt.Columns.Add("ARHC2540", typeof(string));                 // 8
-            dt.Columns.Add("ALHC2540", typeof(string));                 // 9
-            dt.Columns.Add("ARCO2540", typeof(string));                 // 10
-            dt.Columns.Add("ALCO2540", typeof(string));                 // 11
-            dt.Columns.Add("ARNOX2540", typeof(string));                // 12
-            dt.Columns.Add("ALNOX2540", typeof(string));                // 13
-
-            dt.Columns.Add("CREATIONTIME", typeof(DateTime));           // 14
-            dt.Columns.Add("CREATOR", typeof(string));                  // 15
-            dt.Columns.Add("LASTMODIFICATIONTIME", typeof(DateTime));   // 16
-            dt.Columns.Add("LASTMODIFIER", typeof(string));             // 17
-            dt.Columns.Add("DELETIONTIME", typeof(DateTime));           // 18
-            dt.Columns.Add("ISDELETED", typeof(string));                // 19
-            dt.Columns.Add("DELETER", typeof(string));                  // 20
+            dt.Columns.Add("ID", typeof(string));
+            dt.Columns.Add("WQPF_ID", typeof(string));
+            dt.Columns.Add("ARHC5025", typeof(string));
+            dt.Columns.Add("ALHC5025", typeof(string));
+            dt.Columns.Add("ARCO5025", typeof(string));
+            dt.Columns.Add("ALCO5025", typeof(string));
+            dt.Columns.Add("ARNOX5025", typeof(string));
+            dt.Columns.Add("ALNOX5025", typeof(string));
+            dt.Columns.Add("ARHC2540", typeof(string));
+            dt.Columns.Add("ALHC2540", typeof(string));
+            dt.Columns.Add("ARCO2540", typeof(string));
+            dt.Columns.Add("ALCO2540", typeof(string));
+            dt.Columns.Add("ARNOX2540", typeof(string));
+            dt.Columns.Add("ALNOX2540", typeof(string));
+            dt.Columns.Add("CREATIONTIME", typeof(DateTime));
+            dt.Columns.Add("CREATOR", typeof(string));
+            dt.Columns.Add("LASTMODIFICATIONTIME", typeof(DateTime));
+            dt.Columns.Add("LASTMODIFIER", typeof(string));
+            dt.Columns.Add("DELETIONTIME", typeof(DateTime));
+            dt.Columns.Add("ISDELETED", typeof(string));
+            dt.Columns.Add("DELETER", typeof(string));
 
             DataRow dr = dt.NewRow();
-            dr[1] = strKeyID;
-            dr[2] = result.ARHC5025;
-            dr[3] = result.ALHC5025;
-            dr[4] = result.ARCO5025;
-            dr[5] = result.ALCO5025;
-            dr[6] = result.ARNOX5025;
-            dr[7] = result.ALNOX5025;
-            dr[8] = result.ARHC2540;
-            dr[9] = result.ALHC2540;
-            dr[10] = result.ARCO2540;
-            dr[11] = result.ALCO2540;
-            dr[12] = result.ARNOX2540;
-            dr[13] = result.ALNOX2540;
-
-            dr[16] = DateTime.Now.ToLocalTime();
-            dr[17] = m_cfg.DB.Name;
-            dr[19] = "0";
+            dr["WQPF_ID"] = strKeyID;
+            dr["ARHC5025"] = result.ARHC5025;
+            dr["ALHC5025"] = result.ALHC5025;
+            dr["ARCO5025"] = result.ARCO5025;
+            dr["ALCO5025"] = result.ALCO5025;
+            dr["ARNOX5025"] = result.ARNOX5025;
+            dr["ALNOX5025"] = result.ALNOX5025;
+            dr["ARHC2540"] = result.ARHC2540;
+            dr["ALHC2540"] = result.ALHC2540;
+            dr["ARCO2540"] = result.ARCO2540;
+            dr["ALCO2540"] = result.ALCO2540;
+            dr["ARNOX2540"] = result.ARNOX2540;
+            dr["ALNOX2540"] = result.ALNOX2540;
+            dr["LASTMODIFICATIONTIME"] = DateTime.Now.ToLocalTime();
+            dr["LASTMODIFIER"] = m_cfg.DB.Data.Name;
+            dr["ISDELETED"] = "0";
             dt.Rows.Add(dr);
             int iRet;
             try {
@@ -391,36 +387,33 @@ namespace ISUZU_Dyno_Upload {
         }
 
         private void SetDataTable53Oracle(string strKeyID, DataTable dt, UploadField result) {
-            dt.Columns.Add("ID", typeof(string));                       // 0
-            dt.Columns.Add("WQPF_ID", typeof(string));                  // 1
-
-            dt.Columns.Add("VRHC", typeof(string));                     // 2
-            dt.Columns.Add("VLHC", typeof(string));                     // 3
-            dt.Columns.Add("VRCO", typeof(string));                     // 4
-            dt.Columns.Add("VLCO", typeof(string));                     // 5
-            dt.Columns.Add("VRNOX", typeof(string));                    // 6
-            dt.Columns.Add("VLNOX", typeof(string));                    // 7
-
-            dt.Columns.Add("CREATIONTIME", typeof(DateTime));           // 8
-            dt.Columns.Add("CREATOR", typeof(string));                  // 9
-            dt.Columns.Add("LASTMODIFICATIONTIME", typeof(DateTime));   // 10
-            dt.Columns.Add("LASTMODIFIER", typeof(string));             // 11
-            dt.Columns.Add("DELETIONTIME", typeof(DateTime));           // 12
-            dt.Columns.Add("ISDELETED", typeof(string));                // 13
-            dt.Columns.Add("DELETER", typeof(string));                  // 14
+            dt.Columns.Add("ID", typeof(string));
+            dt.Columns.Add("WQPF_ID", typeof(string));
+            dt.Columns.Add("VRHC", typeof(string));
+            dt.Columns.Add("VLHC", typeof(string));
+            dt.Columns.Add("VRCO", typeof(string));
+            dt.Columns.Add("VLCO", typeof(string));
+            dt.Columns.Add("VRNOX", typeof(string));
+            dt.Columns.Add("VLNOX", typeof(string));
+            dt.Columns.Add("CREATIONTIME", typeof(DateTime));
+            dt.Columns.Add("CREATOR", typeof(string));
+            dt.Columns.Add("LASTMODIFICATIONTIME", typeof(DateTime));
+            dt.Columns.Add("LASTMODIFIER", typeof(string));
+            dt.Columns.Add("DELETIONTIME", typeof(DateTime));
+            dt.Columns.Add("ISDELETED", typeof(string));
+            dt.Columns.Add("DELETER", typeof(string));
 
             DataRow dr = dt.NewRow();
-            dr[1] = strKeyID;
-            dr[2] = result.VRHC;
-            dr[3] = result.VLHC;
-            dr[4] = result.VRCO_53;
-            dr[5] = result.VLCO_53;
-            dr[6] = result.VRNOX;
-            dr[7] = result.VLNOX;
-
-            dr[10] = DateTime.Now.ToLocalTime();
-            dr[11] = m_cfg.DB.Name;
-            dr[13] = "0";
+            dr["WQPF_ID"] = strKeyID;
+            dr["VRHC"] = result.VRHC;
+            dr["VLHC"] = result.VLHC;
+            dr["VRCO"] = result.VRCO_53;
+            dr["VLCO"] = result.VLCO_53;
+            dr["VRNOX"] = result.VRNOX;
+            dr["VLNOX"] = result.VLNOX;
+            dr["LASTMODIFICATIONTIME"] = DateTime.Now.ToLocalTime();
+            dr["LASTMODIFIER"] = m_cfg.DB.Data.Name;
+            dr["ISDELETED"] = "0";
             dt.Rows.Add(dr);
             int iRet;
             try {
@@ -439,44 +432,41 @@ namespace ISUZU_Dyno_Upload {
         }
 
         private void SetDataTable54Oracle(string strKeyID, DataTable dt, UploadField result) {
-            dt.Columns.Add("ID", typeof(string));                       // 0
-            dt.Columns.Add("WQPF_ID", typeof(string));                  // 1
-
-            dt.Columns.Add("RATEREVUP", typeof(string));                // 2
-            dt.Columns.Add("RATEREVDOWN", typeof(string));              // 3
-            dt.Columns.Add("REV100", typeof(string));                   // 4
-            dt.Columns.Add("MAXPOWER", typeof(string));                 // 5
-            dt.Columns.Add("MAXPOWERLIMIT", typeof(string));            // 6
-            dt.Columns.Add("SMOKE100", typeof(string));                 // 7
-            dt.Columns.Add("SMOKE80", typeof(string));                  // 8
-            dt.Columns.Add("SMOKELIMIT", typeof(string));               // 9
-            dt.Columns.Add("NOX", typeof(string));                      // 10
-            dt.Columns.Add("NOXLIMIT", typeof(string));                 // 11
-
-            dt.Columns.Add("CREATIONTIME", typeof(DateTime));           // 12
-            dt.Columns.Add("CREATOR", typeof(string));                  // 13
-            dt.Columns.Add("LASTMODIFICATIONTIME", typeof(DateTime));   // 14
-            dt.Columns.Add("LASTMODIFIER", typeof(string));             // 15
-            dt.Columns.Add("DELETIONTIME", typeof(DateTime));           // 16
-            dt.Columns.Add("ISDELETED", typeof(string));                // 17
-            dt.Columns.Add("DELETER", typeof(string));                  // 18
+            dt.Columns.Add("ID", typeof(string));
+            dt.Columns.Add("WQPF_ID", typeof(string));
+            dt.Columns.Add("RATEREVUP", typeof(string));
+            dt.Columns.Add("RATEREVDOWN", typeof(string));
+            dt.Columns.Add("REV100", typeof(string));
+            dt.Columns.Add("MAXPOWER", typeof(string));
+            dt.Columns.Add("MAXPOWERLIMIT", typeof(string));
+            dt.Columns.Add("SMOKE100", typeof(string));
+            dt.Columns.Add("SMOKE80", typeof(string));
+            dt.Columns.Add("SMOKELIMIT", typeof(string));
+            dt.Columns.Add("NOX", typeof(string));
+            dt.Columns.Add("NOXLIMIT", typeof(string));
+            dt.Columns.Add("CREATIONTIME", typeof(DateTime));
+            dt.Columns.Add("CREATOR", typeof(string));
+            dt.Columns.Add("LASTMODIFICATIONTIME", typeof(DateTime));
+            dt.Columns.Add("LASTMODIFIER", typeof(string));
+            dt.Columns.Add("DELETIONTIME", typeof(DateTime));
+            dt.Columns.Add("ISDELETED", typeof(string));
+            dt.Columns.Add("DELETER", typeof(string));
 
             DataRow dr = dt.NewRow();
-            dr[1] = strKeyID;
-            dr[2] = result.RATEREVUP;
-            dr[3] = result.RATEREVDOWN;
-            dr[4] = result.REV100;
-            dr[5] = result.MAXPOWER;
-            dr[6] = result.MAXPOWERLIMIT;
-            dr[7] = result.SMOKE100;
-            dr[8] = result.SMOKE80;
-            dr[9] = result.SMOKELIMIT;
-            dr[10] = result.NOX;
-            dr[11] = result.NOXLIMIT;
-
-            dr[14] = DateTime.Now.ToLocalTime();
-            dr[15] = m_cfg.DB.Name;
-            dr[17] = "0";
+            dr["WQPF_ID"] = strKeyID;
+            dr["RATEREVUP"] = result.RATEREVUP;
+            dr["RATEREVDOWN"] = result.RATEREVDOWN;
+            dr["REV100"] = result.REV100;
+            dr["MAXPOWER"] = result.MAXPOWER;
+            dr["MAXPOWERLIMIT"] = result.MAXPOWERLIMIT;
+            dr["SMOKE100"] = result.SMOKE100;
+            dr["SMOKE80"] = result.SMOKE80;
+            dr["SMOKELIMIT"] = result.SMOKELIMIT;
+            dr["NOX"] = result.NOX;
+            dr["NOXLIMIT"] = result.NOXLIMIT;
+            dr["LASTMODIFICATIONTIME"] = DateTime.Now.ToLocalTime();
+            dr["LASTMODIFIER"] = m_cfg.DB.Data.Name;
+            dr["ISDELETED"] = "0";
             dt.Rows.Add(dr);
             int iRet;
             try {
@@ -495,75 +485,121 @@ namespace ISUZU_Dyno_Upload {
         }
 
         private void SetDataTable55Oracle(string strKeyID, DataTable dt, UploadField result) {
-            dt.Columns.Add("ID", typeof(string));                       // 0
-            dt.Columns.Add("WQPF_ID", typeof(string));                  // 1
+            dt.Columns.Add("ID", typeof(string));
+            dt.Columns.Add("WQPF_ID", typeof(string));
+            dt.Columns.Add("RATEREV", typeof(string));
+            dt.Columns.Add("REV", typeof(string));
+            dt.Columns.Add("SMOKEK1", typeof(string));
+            dt.Columns.Add("SMOKEK2", typeof(string));
+            dt.Columns.Add("SMOKEK3", typeof(string));
+            dt.Columns.Add("SMOKEAVG", typeof(string));
+            dt.Columns.Add("SMOKEKLIMIT", typeof(string));
+            dt.Columns.Add("CREATIONTIME", typeof(DateTime));
+            dt.Columns.Add("CREATOR", typeof(string));
+            dt.Columns.Add("LASTMODIFICATIONTIME", typeof(DateTime));
+            dt.Columns.Add("LASTMODIFIER", typeof(string));
+            dt.Columns.Add("DELETIONTIME", typeof(DateTime));
+            dt.Columns.Add("ISDELETED", typeof(string));
+            dt.Columns.Add("DELETER", typeof(string));
 
-            dt.Columns.Add("RATEREV", typeof(string));                  // 2
-            dt.Columns.Add("REV", typeof(string));                      // 3
-            dt.Columns.Add("SMOKEK1", typeof(string));                  // 4
-            dt.Columns.Add("SMOKEK2", typeof(string));                  // 5
-            dt.Columns.Add("SMOKEK3", typeof(string));                  // 6
-            dt.Columns.Add("SMOKEAVG", typeof(string));                 // 7
-            dt.Columns.Add("SMOKEKLIMIT", typeof(string));              // 8
-
-            dt.Columns.Add("CREATIONTIME", typeof(DateTime));           // 9
-            dt.Columns.Add("CREATOR", typeof(string));                  // 10
-            dt.Columns.Add("LASTMODIFICATIONTIME", typeof(DateTime));   // 11
-            dt.Columns.Add("LASTMODIFIER", typeof(string));             // 12
-            dt.Columns.Add("DELETIONTIME", typeof(DateTime));           // 13
-            dt.Columns.Add("ISDELETED", typeof(string));                // 14
-            dt.Columns.Add("DELETER", typeof(string));                  // 15
+            DataRow dr = dt.NewRow();
+            dr["WQPF_ID"] = strKeyID;
+            dr["RATEREV"] = result.RATEREV;
+            dr["REV"] = result.REV;
+            dr["SMOKEK1"] = result.SMOKEK1;
+            dr["SMOKEK2"] = result.SMOKEK2;
+            dr["SMOKEK3"] = result.SMOKEK3;
+            dr["SMOKEAVG"] = result.SMOKEAVG;
+            dr["SMOKEKLIMIT"] = result.SMOKEKLIMIT;
+            dr["LASTMODIFICATIONTIME"] = DateTime.Now.ToLocalTime();
+            dr["LASTMODIFIER"] = m_cfg.DB.Data.Name;
+            dr["ISDELETED"] = "0";
+            dt.Rows.Add(dr);
+            int iRet;
+            try {
+                string[] strVals = m_dbOracle.GetValue(dt.TableName, "ID", "WQPF_ID", strKeyID);
+                if (strVals.Length == 0) {
+                    iRet = m_dbOracle.InsertRecords(dt.TableName, dt);
+                } else {
+                    iRet = m_dbOracle.UpdateRecords(dt.TableName, dt, "ID", strVals);
+                }
+            } catch (Exception) {
+                throw;
+            }
+            if (iRet <= 0) {
+                throw new Exception("插入或更新 MES 数据出错，返回的影响行数: " + iRet.ToString());
+            }
         }
 
         private void SetDataTable56Oracle(string strKeyID, DataTable dt, UploadField result) {
-            dt.Columns.Add("ID", typeof(string));                       // 0
-            dt.Columns.Add("WQPF_ID", typeof(string));                  // 1
+            dt.Columns.Add("ID", typeof(string));
+            dt.Columns.Add("WQPF_ID", typeof(string));
+            dt.Columns.Add("VRCO", typeof(string));
+            dt.Columns.Add("VLCO", typeof(string));
+            dt.Columns.Add("VRHCNOX", typeof(string));
+            dt.Columns.Add("VLHCNOX", typeof(string));
+            dt.Columns.Add("CREATIONTIME", typeof(DateTime));
+            dt.Columns.Add("CREATOR", typeof(string));
+            dt.Columns.Add("LASTMODIFICATIONTIME", typeof(DateTime));
+            dt.Columns.Add("LASTMODIFIER", typeof(string));
+            dt.Columns.Add("DELETIONTIME", typeof(DateTime));
+            dt.Columns.Add("ISDELETED", typeof(string));
+            dt.Columns.Add("DELETER", typeof(string));
 
-            dt.Columns.Add("VRCO", typeof(string));                     // 2
-            dt.Columns.Add("VLCO", typeof(string));                     // 3
-            dt.Columns.Add("VRHCNOX", typeof(string));                  // 4
-            dt.Columns.Add("VLHCNOX", typeof(string));                  // 5
-
-            dt.Columns.Add("CREATIONTIME", typeof(DateTime));           // 6
-            dt.Columns.Add("CREATOR", typeof(string));                  // 7
-            dt.Columns.Add("LASTMODIFICATIONTIME", typeof(DateTime));   // 8
-            dt.Columns.Add("LASTMODIFIER", typeof(string));             // 9
-            dt.Columns.Add("DELETIONTIME", typeof(DateTime));           // 10
-            dt.Columns.Add("ISDELETED", typeof(string));                // 11
-            dt.Columns.Add("DELETER", typeof(string));                  // 12
+            DataRow dr = dt.NewRow();
+            dr["WQPF_ID"] = strKeyID;
+            dr["VRCO"] = result.VRCO_56;
+            dr["VLCO"] = result.VLCO_56;
+            dr["VRHCNOX"] = result.VRHCNOX;
+            dr["VLHCNOX"] = result.VLHCNOX;
+            dr["LASTMODIFICATIONTIME"] = DateTime.Now.ToLocalTime();
+            dr["LASTMODIFIER"] = m_cfg.DB.Data.Name;
+            dr["ISDELETED"] = "0";
+            dt.Rows.Add(dr);
+            int iRet;
+            try {
+                string[] strVals = m_dbOracle.GetValue(dt.TableName, "ID", "WQPF_ID", strKeyID);
+                if (strVals.Length == 0) {
+                    iRet = m_dbOracle.InsertRecords(dt.TableName, dt);
+                } else {
+                    iRet = m_dbOracle.UpdateRecords(dt.TableName, dt, "ID", strVals);
+                }
+            } catch (Exception) {
+                throw;
+            }
+            if (iRet <= 0) {
+                throw new Exception("插入或更新 MES 数据出错，返回的影响行数: " + iRet.ToString());
+            }
         }
 
         private void SetDataTable6Oracle(string strKeyID, DataTable dt, UploadField result) {
-            dt.Columns.Add("ID", typeof(string));                       // 0
-            dt.Columns.Add("WQPF_ID", typeof(string));                  // 1
-
-            dt.Columns.Add("ANALYMANUF", typeof(string));               // 2
-            dt.Columns.Add("ANALYNAME", typeof(string));                // 3
-            dt.Columns.Add("ANALYMODEL", typeof(string));               // 4
-            dt.Columns.Add("ANALYDATE", typeof(string));                // 5
-            dt.Columns.Add("DYNOMODEL", typeof(string));                // 6
-            dt.Columns.Add("DYNOMANUF", typeof(string));                // 7
-
-            dt.Columns.Add("CREATIONTIME", typeof(DateTime));           // 8
-            dt.Columns.Add("CREATOR", typeof(string));                  // 9
-            dt.Columns.Add("LASTMODIFICATIONTIME", typeof(DateTime));   // 10
-            dt.Columns.Add("LASTMODIFIER", typeof(string));             // 11
-            dt.Columns.Add("DELETIONTIME", typeof(DateTime));           // 12
-            dt.Columns.Add("ISDELETED", typeof(string));                // 13
-            dt.Columns.Add("DELETER", typeof(string));                  // 14
+            dt.Columns.Add("ID", typeof(string));
+            dt.Columns.Add("WQPF_ID", typeof(string));
+            dt.Columns.Add("ANALYMANUF", typeof(string));
+            dt.Columns.Add("ANALYNAME", typeof(string));
+            dt.Columns.Add("ANALYMODEL", typeof(string));
+            dt.Columns.Add("ANALYDATE", typeof(string));
+            dt.Columns.Add("DYNOMODEL", typeof(string));
+            dt.Columns.Add("DYNOMANUF", typeof(string));
+            dt.Columns.Add("CREATIONTIME", typeof(DateTime));
+            dt.Columns.Add("CREATOR", typeof(string));
+            dt.Columns.Add("LASTMODIFICATIONTIME", typeof(DateTime));
+            dt.Columns.Add("LASTMODIFIER", typeof(string));
+            dt.Columns.Add("DELETIONTIME", typeof(DateTime));
+            dt.Columns.Add("ISDELETED", typeof(string));
+            dt.Columns.Add("DELETER", typeof(string));
 
             DataRow dr = dt.NewRow();
-            dr[1] = strKeyID;
-            dr[2] = result.ANALYMANUF;
-            dr[3] = result.ANALYNAME;
-            dr[4] = result.ANALYMODEL;
-            dr[5] = result.ANALYDATE;
-            dr[6] = result.DYNOMODEL;
-            dr[7] = result.DYNOMANUF;
-
-            dr[10] = DateTime.Now.ToLocalTime();
-            dr[11] = m_cfg.DB.Name;
-            dr[13] = "0";
+            dr["WQPF_ID"] = strKeyID;
+            dr["ANALYMANUF"] = result.ANALYMANUF;
+            dr["ANALYNAME"] = result.ANALYNAME;
+            dr["ANALYMODEL"] = result.ANALYMODEL;
+            dr["ANALYDATE"] = result.ANALYDATE;
+            dr["DYNOMODEL"] = result.DYNOMODEL;
+            dr["DYNOMANUF"] = result.DYNOMANUF;
+            dr["LASTMODIFICATIONTIME"] = DateTime.Now.ToLocalTime();
+            dr["LASTMODIFIER"] = m_cfg.DB.Data.Name;
+            dr["ISDELETED"] = "0";
             dt.Rows.Add(dr);
             int iRet;
             try {
@@ -589,10 +625,9 @@ namespace ISUZU_Dyno_Upload {
 
         private bool ShowData(string strVIN) {
             DataRow dr;
-            string JCLSH;
-            Dictionary<string, string> result = m_db.GetJCLSH(strVIN);
-            if (result != null && result.ContainsKey("检测流水号") && result["检测流水号"] != null) {
-                JCLSH = result["检测流水号"];
+            Dictionary<string, string> result = m_db.GetKeyData(strVIN, m_cfg.FieldUL.Data.F_KEY.Name);
+            if (result != null && result.ContainsKey("外检报告编号") && result["外检报告编号"] != null) {
+                m_cfg.FieldUL.Data.F_KEY.Value = result["外检报告编号"];
             } else {
                 return false;
             }
@@ -604,7 +639,7 @@ namespace ISUZU_Dyno_Upload {
                 m_dtInfo.Rows.Add(dr);
             }
 
-            result = m_db.GetEnv(JCLSH);
+            result = m_db.GetEnv(m_cfg.FieldUL.Data.F_KEY);
             m_dtEnv.Clear();
             foreach (string key in result.Keys) {
                 dr = m_dtEnv.NewRow();
@@ -613,7 +648,7 @@ namespace ISUZU_Dyno_Upload {
                 m_dtEnv.Rows.Add(dr);
             }
 
-            result = m_db.GetResult(m_cfg.FieldUL.Data, JCLSH);
+            result = m_db.GetResult(m_cfg.FieldUL.Data);
             m_dtResult.Clear();
             foreach (string key in result.Keys) {
                 dr = m_dtResult.NewRow();
@@ -633,7 +668,7 @@ namespace ISUZU_Dyno_Upload {
 
             switch (m_dtResult.Rows[0][1]) {
             case "1":
-                result = m_db.Get51(m_cfg.FieldUL.Data, JCLSH);
+                result = m_db.Get51(m_cfg.FieldUL.Data);
                 m_dt51.Clear();
                 foreach (string key in result.Keys) {
                     dr = m_dt51.NewRow();
@@ -643,7 +678,7 @@ namespace ISUZU_Dyno_Upload {
                 }
                 break;
             case "2":
-                result = m_db.Get52(m_cfg.FieldUL.Data, JCLSH);
+                result = m_db.Get52(m_cfg.FieldUL.Data);
                 m_dt52.Clear();
                 foreach (string key in result.Keys) {
                     dr = m_dt52.NewRow();
@@ -653,7 +688,7 @@ namespace ISUZU_Dyno_Upload {
                 }
                 break;
             case "3":
-                result = m_db.Get53(m_cfg.FieldUL.Data, JCLSH);
+                result = m_db.Get53(m_cfg.FieldUL.Data);
                 m_dt53.Clear();
                 foreach (string key in result.Keys) {
                     dr = m_dt53.NewRow();
@@ -663,13 +698,33 @@ namespace ISUZU_Dyno_Upload {
                 }
                 break;
             case "4":
-                result = m_db.Get54(m_cfg.FieldUL.Data, JCLSH);
+                result = m_db.Get54(m_cfg.FieldUL.Data);
                 m_dt54.Clear();
                 foreach (string key in result.Keys) {
                     dr = m_dt54.NewRow();
                     dr[0] = key;
                     dr[1] = result[key];
                     m_dt54.Rows.Add(dr);
+                }
+                break;
+            case "6":
+                result = m_db.Get55(m_cfg.FieldUL.Data);
+                m_dt55.Clear();
+                foreach (string key in result.Keys) {
+                    dr = m_dt55.NewRow();
+                    dr[0] = key;
+                    dr[1] = result[key];
+                    m_dt55.Rows.Add(dr);
+                }
+                break;
+            case "8":
+                result = m_db.Get56(m_cfg.FieldUL.Data);
+                m_dt56.Clear();
+                foreach (string key in result.Keys) {
+                    dr = m_dt56.NewRow();
+                    dr[0] = key;
+                    dr[1] = result[key];
+                    m_dt56.Rows.Add(dr);
                 }
                 break;
             }
@@ -684,26 +739,26 @@ namespace ISUZU_Dyno_Upload {
                 m_log.TraceError("GetDynoData error: " + ex.Message);
             }
             if (result == null) {
-                this.Invoke((EventHandler)delegate {
-                    this.txtBoxManualUpload.BackColor = Color.Red;
-                    this.txtBoxManualUpload.ForeColor = Color.White;
-                    this.txtBoxManualUpload.Text = "VIN[" + this.txtBoxVIN.Text + "]未获取到排放数据";
+                Invoke((EventHandler)delegate {
+                    txtBoxManualUpload.BackColor = Color.Red;
+                    txtBoxManualUpload.ForeColor = Color.White;
+                    txtBoxManualUpload.Text = "VIN[" + this.txtBoxVIN.Text + "]未获取到排放数据";
                 });
             } else {
                 if (Upload(result, out string errorMsg)) {
-                    this.Invoke((EventHandler)delegate {
-                        this.txtBoxManualUpload.BackColor = Color.LightGreen;
-                        this.txtBoxManualUpload.ForeColor = m_foreColor;
-                        this.txtBoxManualUpload.Text = "VIN[" + result.VIN + "]数据已手动上传";
+                    Invoke((EventHandler)delegate {
+                        txtBoxManualUpload.BackColor = Color.LightGreen;
+                        txtBoxManualUpload.ForeColor = m_foreColor;
+                        txtBoxManualUpload.Text = "VIN[" + result.VIN + "]数据已手动上传";
                     });
                 } else {
                     if (errorMsg.Contains("Exception|")) {
                         MessageBox.Show(errorMsg.Split('|')[1], "上传出错", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     } else {
-                        this.Invoke((EventHandler)delegate {
-                            this.txtBoxManualUpload.BackColor = Color.Red;
-                            this.txtBoxManualUpload.ForeColor = Color.White;
-                            this.txtBoxManualUpload.Text = "VIN[" + result.VIN + "]" + errorMsg;
+                        Invoke((EventHandler)delegate {
+                            txtBoxManualUpload.BackColor = Color.Red;
+                            txtBoxManualUpload.ForeColor = Color.White;
+                            txtBoxManualUpload.Text = "VIN[" + result.VIN + "]" + errorMsg;
                         });
                     }
                 }
@@ -716,24 +771,24 @@ namespace ISUZU_Dyno_Upload {
                 string[] codes = tb.Text.Split('*');
                 if (codes != null) {
                     if (codes.Length > 2) {
-                        this.txtBoxVIN.Text = codes[2];
+                        txtBoxVIN.Text = codes[2];
                     } else if (codes.Length == 1) {
-                        this.txtBoxVIN.Text = codes[0];
+                        txtBoxVIN.Text = codes[0];
                     }
-                    if (this.txtBoxVIN.Text.Length == 17) {
-                        this.txtBoxManualUpload.BackColor = m_backColor;
-                        this.txtBoxManualUpload.ForeColor = m_foreColor;
-                        this.txtBoxManualUpload.Text = "手动上传就绪";
-                        if (ShowData(this.txtBoxVIN.Text)) {
-                            this.txtBoxManualUpload.BackColor = m_backColor;
-                            this.txtBoxManualUpload.ForeColor = m_foreColor;
-                            this.txtBoxManualUpload.Text = "数据显示完毕";
+                    if (txtBoxVIN.Text.Length == 17) {
+                        txtBoxManualUpload.BackColor = m_backColor;
+                        txtBoxManualUpload.ForeColor = m_foreColor;
+                        txtBoxManualUpload.Text = "手动上传就绪";
+                        if (ShowData(txtBoxVIN.Text)) {
+                            txtBoxManualUpload.BackColor = m_backColor;
+                            txtBoxManualUpload.ForeColor = m_foreColor;
+                            txtBoxManualUpload.Text = "数据显示完毕";
                         } else {
-                            this.txtBoxManualUpload.BackColor = Color.Red;
-                            this.txtBoxManualUpload.ForeColor = Color.White;
-                            this.txtBoxManualUpload.Text = "VIN[" + this.txtBoxVIN.Text + "]未获取到排放数据";
+                            txtBoxManualUpload.BackColor = Color.Red;
+                            txtBoxManualUpload.ForeColor = Color.White;
+                            txtBoxManualUpload.Text = "VIN[" + this.txtBoxVIN.Text + "]未获取到排放数据";
                         }
-                        this.txtBoxVIN.SelectAll();
+                        txtBoxVIN.SelectAll();
                     }
                 }
             }

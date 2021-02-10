@@ -56,8 +56,10 @@ namespace ISUZU_Dyno_Upload {
             }
             try {
                 XmlSerializer xmlSerializer = new XmlSerializer(typeof(T));
+                XmlSerializerNamespaces namespaces = new XmlSerializerNamespaces();
+                namespaces.Add(string.Empty, string.Empty);
                 using (TextWriter writer = new StreamWriter(config.File_xml)) {
-                    xmlSerializer.Serialize(writer, config.Data);
+                    xmlSerializer.Serialize(writer, config.Data, namespaces);
                     writer.Close();
                 }
             } catch (Exception ex) {

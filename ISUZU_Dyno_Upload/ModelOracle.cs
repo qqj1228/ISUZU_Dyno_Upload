@@ -277,70 +277,53 @@ namespace ISUZU_Dyno_Upload {
             USP_GET_ENVIRONMENT_DATA(strVIN, dtDynoParam, out errMsg);
             if (dtDynoParam.Rows.Count > 0) {
                 DataRow dr = dtDynoParam.Rows[dtDynoParam.Rows.Count - 1];
-                ei.VehicleInfo1.VIN = strVIN;
-                ei.VehicleInfo1.VehicleType = dr["VEHICLE_KIND_S"].ToString();
-                ei.VehicleInfo1.ISQZ = dr["CAR_OR_TRUCK_S"].ToString();
-                ei.VehicleInfo1.CLXH = dr["VEHICLE_MODEL_S"].ToString();
-                ei.VehicleInfo1.FDJXH = dr["FDJXH_S"].ToString();
-                ei.VehicleInfo1.HasOBD = dr["IS_OBD_S"].ToString();
-                ei.VehicleInfo1.FuelType = dr["FUEL_TYPE_S"].ToString();
-                ei.VehicleInfo1.Standard = dr["CLPFJD_S"].ToString();
+                ei.VehicleModel = dr["VEHICLE_MODEL_S"].ToString();
+                ei.VehicleMfr = dr["SCCMC_S"].ToString();
+                ei.EngineModel = dr["FDJXH_S"].ToString();
+                ei.EngineMfr = dr["FDJSCQY_S"].ToString();
+                ei.EngineVolume = Convert.ToDouble(dr["FDJPL_S"]);
+                ei.CylinderQTY = Convert.ToInt32(dr["QGS_S"]);
+                ei.FuelSupply = Convert.ToInt32(dr["RYGJSYS_S"]) + 1;
+                ei.RatedPower = Convert.ToDouble(dr["FDJEDGL_S"]);
+                ei.RatedRPM = Convert.ToInt32(dr["EDZHS_S"]);
+                ei.EmissionStage = Convert.ToInt32(dr["CLPFJD_S"]) + 1;
+                ei.Transmission = Convert.ToInt32(dr["BSQXSH_S"]) + 1;
+                ei.CatConverter = dr["CHZHHQXH_S"].ToString();
+                ei.RefMass = Convert.ToInt32(dr["JZHZHL_S"]);
+                ei.MaxMass = Convert.ToInt32(dr["MAXSJZZHL_S"]);
+                ei.OBDLocation = dr["IS_OBD_S"].ToString() == "1"? "有OBD":"无OBD";
 
-                ei.VehicleInfo2.VIN = strVIN;
-                ei.VehicleInfo2.VehicleKind = dr["VEHICLE_KIND_S"].ToString();
-                ei.VehicleInfo2.VehicleType = dr["VEHICLE_TYPE_S"].ToString();
-                ei.VehicleInfo2.Model = dr["FDJSB_S"].ToString();
-                ei.VehicleInfo2.GearBoxType = dr["BSQXSH_S"].ToString();
-                ei.VehicleInfo2.AdmissionMode = dr["AIR_INLET_S"].ToString();
-                ei.VehicleInfo2.Volume = dr["FDJPL_S"].ToString();
-                ei.VehicleInfo2.FuelType = dr["FUEL_TYPE_S"].ToString();
-                ei.VehicleInfo2.SupplyMode = dr["RYGJSYS_S"].ToString();
-                ei.VehicleInfo2.RatedRev = dr["EDZHS_S"].ToString();
-                ei.VehicleInfo2.RatedPower = dr["FDJEDGL_S"].ToString();
-                ei.VehicleInfo2.DriveMode = dr["DRIVE_MODE_S"].ToString();
-                ei.VehicleInfo2.MaxMass = dr["MAXSJZZHL_S"].ToString();
-                ei.VehicleInfo2.RefMass = dr["JZHZHL_S"].ToString();
-                ei.VehicleInfo2.HasODB = dr["IS_OBD_S"].ToString();
-                ei.VehicleInfo2.HasPurge = dr["IS_PURGE_S"].ToString();
-                ei.VehicleInfo2.IsEFI = dr["IS_EFI_S"].ToString();
-                ei.VehicleInfo2.MaxLoad = dr["NUM_OR_WEIGHT_S"].ToString();
-                ei.VehicleInfo2.CarOrTruck = dr["CAR_OR_TRUCK_S"].ToString();
-                ei.VehicleInfo2.Cylinder = dr["QGS_S"].ToString();
-                ei.VehicleInfo2.IsTransform = dr["IS_TRANSFORM_S"].ToString();
-                ei.VehicleInfo2.StandardID = dr["CLPFJD_S"].ToString();
-                ei.VehicleInfo2.IsAsm = dr["IS_ASM_S"].ToString();
-                ei.VehicleInfo2.QCZZCJ = dr["SCCMC_S"].ToString();
-                ei.VehicleInfo2.FDJZZC = dr["FDJSCQY_S"].ToString();
-                ei.VehicleInfo2.DDJXH = dr["DDJXH_S"].ToString();
-                ei.VehicleInfo2.XNZZXH = dr["CHNZHZHXH_S"].ToString();
-                ei.VehicleInfo2.CHZHQXH = dr["CHZHHQXH_S"].ToString();
-                ei.VehicleInfo2.SCR = dr["SCR_S"].ToString();
-                ei.VehicleInfo2.SCRXH = dr["SCRXH_S"].ToString();
-                ei.VehicleInfo2.DPF = dr["DPF_S"].ToString();
-                ei.VehicleInfo2.DPFXH = dr["DPFXH_S"].ToString();
-                ei.VehicleInfo2.DCRL = dr["DCHRL_S"].ToString();
+                // 处理后处理类型和型号字段
+                string strSCR = dr["SCR_S"].ToString().Length > 0 ? "SCR" : string.Empty;
+                string strDPF = dr["DPF_S"].ToString().Length > 0 ? "DPF" : string.Empty;
+                ei.PostProcessorType = (strSCR + "+" + strDPF).Trim('+');
+                string strSCRXH = dr["SCRXH_S"].ToString().Length > 0 ? "SCR:" + dr["SCRXH_S"].ToString() : string.Empty;
+                string strDPFXH = dr["DPFXH_S"].ToString().Length > 0 ? "DPF:" + dr["DPFXH_S"].ToString() : string.Empty;
+                ei.PostProcessorModel = (strSCRXH + ";" + strDPFXH).Trim(';');
+
+                ei.MotorModel = dr["DDJXH_S"].ToString();
+                ei.EnergyStorage = dr["CHNZHZHXH_S"].ToString();
+                ei.BatteryCap = dr["DCHRL_S"].ToString();
+
                 // 处理检测方法字符串
                 string strTestMethod = dr["JCFF_S"].ToString();
-                if (strTestMethod.Contains("双怠速")) {
-                    strTestMethod = "双怠速法";
+                if (strTestMethod.Contains("免检")) {
+                    ei.TestMethod = 0;
+                } else if (strTestMethod.Contains("双怠速")) {
+                    ei.TestMethod = 1;
                 } else if (strTestMethod.Contains("稳态工况")) {
-                    strTestMethod = "稳态工况";
+                    ei.TestMethod = 2;
                 } else if (strTestMethod.Contains("简易瞬态")) {
-                    strTestMethod = "简易瞬态";
+                    ei.TestMethod = 3;
                 } else if (strTestMethod.Contains("加载减速")) {
-                    strTestMethod = "加载减速";
+                    ei.TestMethod = 4;
                 } else if (strTestMethod.Contains("自由加速")) {
-                    strTestMethod = "自由加速";
-                } else if (strTestMethod.Contains("林格曼")) {
-                    strTestMethod = "林格曼黑度";
-                } else if (strTestMethod.Contains("瞬态工况")) {
-                    strTestMethod = "瞬态工况";
-                } else if (strTestMethod.Contains("不透光")) {
-                    strTestMethod = "不透光法";
-                } else if (strTestMethod.Contains("滤纸式")) {
-                    strTestMethod = "滤纸式法";
+                    ei.TestMethod = 6;
+                } else if (strTestMethod.Length > 0) {
+                    ei.TestMethod = 9;
+                } else {
+                    ei.TestMethod = 5;
                 }
-                ei.VehicleInfo2.JCFF = strTestMethod;
             }
 
         }

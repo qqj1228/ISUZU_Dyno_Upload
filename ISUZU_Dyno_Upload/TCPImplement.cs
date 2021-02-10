@@ -101,8 +101,6 @@ namespace ISUZU_Dyno_Upload {
                     bool error = false;
                     if (m_dynoParam.UseSimData) {
                         ei = m_emiInfoSim;
-                        ei.VehicleInfo1.VIN = strVIN;
-                        ei.VehicleInfo2.VIN = strVIN;
                     } else {
                         try {
                             m_dbOracle.GetEmissionInfo(strVIN, ei, out errMsg);
